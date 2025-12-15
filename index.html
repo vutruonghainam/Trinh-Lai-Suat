@@ -1,0 +1,693 @@
+import React, { useState, useMemo, useEffect } from 'react';
+import { 
+  Calculator, Table, TrendingUp, Info, DollarSign, Calendar, 
+  UserCheck, ShieldCheck, List, BarChart3, FileText, ArrowRight,
+  CheckCircle2, AlertTriangle, Briefcase, Search, Wallet, Percent, ArrowUpRight,
+  Monitor, Store, Coins, Clock, CreditCard, BookOpen
+} from 'lucide-react';
+
+const InterestApprovalTool = () => {
+  const [activeTab, setActiveTab] = useState('proposal'); 
+  
+  // --- STATE ---
+  const [authAmount, setAuthAmount] = useState(1000000000); 
+  const [authMonth, setAuthMonth] = useState(6); 
+  const [depositType, setDepositType] = useState('online'); // Mặc định Online
+  const [paymentMethod, setPaymentMethod] = useState('maturity'); 
+
+  // Reset payment method if invalid for the selected term
+  useEffect(() => {
+    const m = Number(authMonth) || 0;
+    if (m < 3 && (paymentMethod === 'monthly' || paymentMethod === 'quarterly')) setPaymentMethod('maturity');
+    if (m < 6 && (paymentMethod === '6months' || paymentMethod === 'quarterly')) setPaymentMethod('maturity');
+    if (m < 12 && paymentMethod === 'yearly') setPaymentMethod('maturity');
+  }, [authMonth, paymentMethod]);
+
+  // Helper để format hiển thị số tiền có dấu chấm
+  const formatNumberWithDots = (value) => {
+    if (value === '' || value === undefined || value === null) return '';
+    return new Intl.NumberFormat('vi-VN').format(value);
+  };
+
+  // ==========================================
+  // 1. DỮ LIỆU LÃI SUẤT NIÊM YẾT (HIỆU LỰC 09/12/2025)
+  // ==========================================
+  
+  // 1.1 Lãi suất Cuối kỳ (2 Bảng riêng biệt)
+  const listingDataMaturity = {
+    counter: [
+      { range: '< 1 tỷ', min: 0, max: 1000000000, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 5.80, m7: 5.80, m8: 5.80, m9: 5.80, m10: 5.80, m11: 5.80, m12: 5.80, m13: 5.80, m15: 5.80, m18: 5.80, m24: 5.80, m36: 5.80 } },
+      { range: '1 tỷ - < 3 tỷ', min: 1000000000, max: 3000000000, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 5.80, m7: 5.80, m8: 5.80, m9: 5.80, m10: 5.80, m11: 5.80, m12: 5.80, m13: 5.80, m15: 5.80, m18: 5.80, m24: 5.80, m36: 5.80 } },
+      { range: '3 tỷ - < 10 tỷ', min: 3000000000, max: 10000000000, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 5.80, m7: 5.80, m8: 5.80, m9: 5.80, m10: 5.80, m11: 5.80, m12: 5.80, m13: 5.80, m15: 5.80, m18: 5.80, m24: 5.80, m36: 5.80 } },
+      { range: '10 tỷ - < 50 tỷ', min: 10000000000, max: 50000000000, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 5.90, m7: 5.90, m8: 5.90, m9: 5.90, m10: 5.90, m11: 5.90, m12: 5.90, m13: 5.90, m15: 5.90, m18: 5.90, m24: 5.90, m36: 5.90 } },
+      { range: '≥ 50 tỷ', min: 50000000000, max: Infinity, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 6.00, m7: 6.00, m8: 6.00, m9: 6.00, m10: 6.00, m11: 6.00, m12: 6.00, m13: 6.00, m15: 6.00, m18: 6.00, m24: 6.00, m36: 6.00 } },
+    ],
+    online: [
+      { range: '< 1 tỷ', min: 0, max: 1000000000, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 6.00, m7: 6.00, m8: 6.00, m9: 6.00, m10: 6.00, m11: 6.00, m12: 6.00, m13: 6.00, m15: 6.00, m18: 6.00, m24: 6.00, m36: 6.00 } },
+      { range: '1 tỷ - < 3 tỷ', min: 1000000000, max: 3000000000, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 6.00, m7: 6.00, m8: 6.00, m9: 6.00, m10: 6.00, m11: 6.00, m12: 6.00, m13: 6.00, m15: 6.00, m18: 6.00, m24: 6.00, m36: 6.00 } },
+      { range: '3 tỷ - < 10 tỷ', min: 3000000000, max: 10000000000, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 6.00, m7: 6.00, m8: 6.00, m9: 6.00, m10: 6.00, m11: 6.00, m12: 6.00, m13: 6.00, m15: 6.00, m18: 6.00, m24: 6.00, m36: 6.00 } },
+      { range: '10 tỷ - < 50 tỷ', min: 10000000000, max: 50000000000, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 6.10, m7: 6.10, m8: 6.10, m9: 6.10, m10: 6.10, m11: 6.10, m12: 6.10, m13: 6.10, m15: 6.10, m18: 6.10, m24: 6.10, m36: 6.10 } },
+      { range: '≥ 50 tỷ', min: 50000000000, max: Infinity, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 6.20, m7: 6.20, m8: 6.20, m9: 6.20, m10: 6.20, m11: 6.20, m12: 6.20, m13: 6.20, m15: 6.20, m18: 6.20, m24: 6.20, m36: 6.20 } },
+    ]
+  };
+
+  // 1.2 Lãi suất Trả trước (Phân tầng số tiền)
+  const listingDataPrepaid = [
+    {
+      range: '< 5 tỷ', min: 0, max: 5000000000,
+      rates: {
+        1: 4.73, 2: 4.71, 3: 4.69, 4: 4.68, 5: 4.66,
+        6: 5.64, 7: 5.61, 8: 5.58, 9: 5.56, 10: 5.53, 11: 5.51,
+        12: 5.48, 13: 5.46, 15: 5.41, 18: 5.34, 24: 5.20, 36: 4.94
+      }
+    },
+    {
+      range: '≥ 5 tỷ', min: 5000000000, max: Infinity,
+      rates: {
+        1: 4.73, 2: 4.71, 3: 4.69, 4: 4.68, 5: 4.66,
+        6: 5.64, 7: 5.61, 8: 5.58, 9: 5.56, 10: 5.53, 11: 5.51,
+        12: 5.48, 13: 5.46, 15: 5.41, 18: 5.34, 24: 5.20, 36: 4.94
+      }
+    }
+  ];
+
+  // 1.3 Lãi suất Định kỳ
+  const listingDataPeriodic = {
+    monthly: { 3: 4.73, 4: 4.72, 5: 4.71, 6: 5.73, 7: 5.72, 8: 5.70, 9: 5.69, 10: 5.68, 11: 5.66, 12: 5.65, 13: 5.64, 15: 5.61, 18: 5.57, 24: 5.50, 36: 5.36 },
+    quarterly: { 6: 5.76, 9: 5.72, 12: 5.68, 15: 5.64, 18: 5.60, 24: 5.53, 36: 5.38 },
+    '6months': { 12: 5.72, 18: 5.64, 24: 5.56, 36: 5.42 },
+    yearly: { 24: 5.64, 36: 5.49 }
+  };
+
+  // ==========================================
+  // 2. DỮ LIỆU THẨM QUYỀN
+  // ==========================================
+  const authorityRoles = {
+    'Level1': 'GĐKV/ GĐCN/ GĐCN core/ GĐ TTKD Private',
+    'Level2': 'GĐV/ GĐ TTKD Private',
+    'Level3': 'GĐM (Giám đốc Miền)',
+  };
+
+  const authorityData = {
+    counter: [
+      { min: 100000000, max: 500000000, label: '100tr - < 500tr', auth: 'Level1', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.00, t7: 7.10, t8_13: 6.70, t15_plus: 6.70 } },
+      { min: 500000000, max: 1000000000, label: '500tr - < 1 tỷ', auth: 'Level1', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.10, t7: 7.20, t8_13: 6.80, t15_plus: 6.80 } },
+      { min: 1000000000, max: 3000000000, label: '>= 1 tỷ', auth: 'Level1', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.10, t7: 7.20, t8_13: 6.80, t15_plus: 6.80 } },
+      { min: 3000000000, max: 10000000000, label: '>= 3 tỷ', auth: 'Level2', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.20, t7: 7.30, t8_13: 6.90, t15_plus: 6.90 } },
+      { min: 10000000000, max: 50000000000, label: '>= 10 tỷ', auth: 'Level3', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.30, t7: 7.40, t8_13: 7.05, t15_plus: 7.05 } },
+      { min: 50000000000, max: Infinity, label: '>= 50 tỷ', auth: 'Level3', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.40, t7: 7.50, t8_13: 7.10, t15_plus: 7.10 } },
+    ],
+    online: [
+      { min: 100000000, max: 300000000, label: '100tr - < 300tr', auth: 'Level1', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.10, t7: 7.20, t8_13: 6.80, t15_plus: 6.80 } },
+      { min: 300000000, max: 1000000000, label: '300tr - < 1 tỷ', auth: 'Level1', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.20, t7: 7.30, t8_13: 6.90, t15_plus: 6.90 } },
+      { min: 1000000000, max: 3000000000, label: '>= 1 tỷ', auth: 'Level1', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.20, t7: 7.30, t8_13: 6.90, t15_plus: 6.90 } },
+      { min: 3000000000, max: 10000000000, label: '>= 3 tỷ', auth: 'Level2', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.30, t7: 7.40, t8_13: 7.00, t15_plus: 7.00 } },
+      { min: 10000000000, max: 50000000000, label: '>= 10 tỷ', auth: 'Level3', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.40, t7: 7.50, t8_13: 7.15, t15_plus: 7.15 } },
+      { min: 50000000000, max: Infinity, label: '>= 50 tỷ', auth: 'Level3', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.50, t7: 7.60, t8_13: 7.20, t15_plus: 7.20 } },
+    ]
+  };
+
+  // ==========================================
+  // 3. DỮ LIỆU LSMV (FTP)
+  // ==========================================
+  const lsmvData = [
+    { label: 'TTTH(*)', month: 0, maturity: 2.44, monthly: 2.44, quarterly: 2.44, semiAnnual: 2.44, annual: 2.44, prepaid: 2.44 },
+    { label: '1 Tuần', month: 0.25, maturity: 2.44, prepaid: 2.44 },
+    { label: '2 Tuần', month: 0.5, maturity: 2.44, prepaid: 2.44 },
+    { label: '3 Tuần', month: 0.75, maturity: 2.44, prepaid: 2.44 },
+    { label: '1 Tháng', month: 1, maturity: 5.40, monthly: 5.40, prepaid: 5.38 },
+    { label: '2 Tháng', month: 2, maturity: 5.40, monthly: 5.39, prepaid: 5.35 },
+    { label: '3 Tháng', month: 3, maturity: 5.40, monthly: 5.38, prepaid: 5.33 },
+    { label: '4 Tháng', month: 4, maturity: 5.65, monthly: 5.61, prepaid: 5.55 },
+    { label: '5 Tháng', month: 5, maturity: 5.90, monthly: 5.84, prepaid: 5.76 },
+    { label: '6 Tháng', month: 6, maturity: 8.05, monthly: 7.92, quarterly: 7.97, prepaid: 7.74 },
+    { label: '7 Tháng', month: 7, maturity: 8.15, monthly: 7.99, prepaid: 7.78 },
+    { label: '8 Tháng', month: 8, maturity: 7.85, monthly: 7.68, prepaid: 7.46 },
+    { label: '9 Tháng', month: 9, maturity: 7.85, monthly: 7.65, quarterly: 7.70, prepaid: 7.42 },
+    { label: '10 Tháng', month: 10, maturity: 7.85, monthly: 7.63, prepaid: 7.37 },
+    { label: '11 Tháng', month: 11, maturity: 7.85, monthly: 7.61, prepaid: 7.32 },
+    { label: '12 Tháng', month: 12, maturity: 7.85, monthly: 7.58, quarterly: 7.63, semiAnnual: 7.70, prepaid: 7.28 },
+    { label: '13 Tháng', month: 13, maturity: 7.85, monthly: 7.56, prepaid: 7.24 },
+    { label: '15 Tháng', month: 15, maturity: 7.85, monthly: 7.51, quarterly: 7.56, prepaid: 7.15 },
+    { label: '18 Tháng', month: 18, maturity: 7.85, monthly: 7.45, quarterly: 7.49, semiAnnual: 7.56, prepaid: 7.02 },
+    { label: '24 Tháng', month: 24, maturity: 7.85, monthly: 7.32, quarterly: 7.36, semiAnnual: 7.43, annual: 7.57, prepaid: 6.79 },
+    { label: '36 Tháng', month: 36, maturity: 7.85, monthly: 7.07, quarterly: 7.11, semiAnnual: 7.18, annual: 7.31, prepaid: 6.36 },
+    { label: '48 Tháng', month: 48, maturity: 7.85, monthly: 6.85, quarterly: 6.89, semiAnnual: 6.95, annual: 7.07, prepaid: 5.98 },
+    { label: '60 Tháng', month: 60, maturity: 7.85, monthly: 6.64, quarterly: 6.68, semiAnnual: 6.73, annual: 6.85, prepaid: 5.64 }
+  ];
+
+  // ==========================================
+  // HÀM TÍNH LÃI SUẤT QUY ĐỔI (ĐÃ KIỂM TRA)
+  // ==========================================
+  const calculateEquivalentRate = (baseRateEndOfTerm, months, method) => {
+    if (!baseRateEndOfTerm || !months) return 0;
+    const R_ck = baseRateEndOfTerm / 100;
+    const n = months;
+    let R_kq = 0;
+
+    switch (method) {
+      case 'maturity': return baseRateEndOfTerm;
+      case 'monthly': R_kq = (Math.pow(1 + (R_ck * n) / 12, 1 / n) - 1) * 12; break;
+      case 'quarterly': R_kq = (Math.pow(1 + (R_ck * n) / 12, 3 / n) - 1) * 4; break;
+      case '6months': R_kq = (Math.pow(1 + (R_ck * n) / 12, 6 / n) - 1) * 2; break;
+      case 'yearly': R_kq = (Math.pow(1 + (R_ck * n) / 12, 12 / n) - 1) * 1; break;
+      case 'prepaid': R_kq = R_ck / (1 + (R_ck * n) / 12); break;
+      default: return baseRateEndOfTerm;
+    }
+    return R_kq * 100;
+  };
+
+  // ==========================================
+  // LOGIC TÍNH TOÁN
+  // ==========================================
+  const proposalData = useMemo(() => {
+    // Đảm bảo amount là số để tính toán
+    const amount = Number(authAmount) || 0;
+    // Đảm bảo month là số
+    const month = Number(authMonth) || 0;
+
+    // A. XÁC ĐỊNH LÃI SUẤT NIÊM YẾT
+    let listedRate = 0;
+    let rangeLabel = '';
+
+    if (paymentMethod === 'maturity') {
+        const currentListingTable = depositType === 'online' ? listingDataMaturity.online : listingDataMaturity.counter;
+        const listRow = currentListingTable.find(r => amount >= r.min && amount < r.max) || currentListingTable[currentListingTable.length - 1];
+        rangeLabel = listRow.range;
+        
+        // Mapping key - Sử dụng trực tiếp các key m1, m2...
+        if (month < 1) listedRate = listRow.rates.w1_3;
+        else if (month >= 1 && month <= 60) {
+             const key = `m${month}`;
+             if(listRow.rates[key]) {
+                 listedRate = listRow.rates[key];
+             } else {
+                 // Fallback nếu không có key trực tiếp (ví dụ 14 tháng), lấy key thấp hơn gần nhất
+                 if (month > 13 && month < 15) listedRate = listRow.rates.m13;
+                 else if (month > 15 && month < 18) listedRate = listRow.rates.m15;
+                 else if (month > 18 && month < 24) listedRate = listRow.rates.m18;
+                 else if (month > 24 && month < 36) listedRate = listRow.rates.m24;
+                 else if (month > 36) listedRate = listRow.rates.m36;
+             }
+        } else if (month > 60) {
+             listedRate = listRow.rates.m36; // Fallback max
+        }
+
+    } else if (paymentMethod === 'prepaid') {
+        const listRow = listingDataPrepaid.find(r => amount >= r.min && amount < r.max) || listingDataPrepaid[listingDataPrepaid.length - 1];
+        listedRate = listRow.rates[month] || 0;
+        rangeLabel = listRow.range;
+    } else {
+        const table = listingDataPeriodic[paymentMethod];
+        listedRate = table ? (table[month] || 0) : 0;
+        rangeLabel = 'Chung (Periodic)';
+    }
+
+    // B. XÁC ĐỊNH LÃI SUẤT THẨM QUYỀN
+    const currentAuthorityTable = depositType === 'online' ? authorityData.online : authorityData.counter;
+    const authRow = currentAuthorityTable.find(r => amount >= r.min && amount < r.max);
+    let authorityRateBase = 0;
+    let authRole = "Chưa hỗ trợ";
+    let termKey = "";
+
+    if (authRow) {
+        authRole = authorityRoles[authRow.auth];
+        if (month >= 1 && month <= 2) { authorityRateBase = authRow.rates.t1_2; termKey = "1-2M"; }
+        else if (month >= 3 && month <= 5) { authorityRateBase = authRow.rates.t3_5; termKey = "3-5M"; }
+        else if (month === 6) { authorityRateBase = authRow.rates.t6; termKey = "6M"; }
+        else if (month === 7) { authorityRateBase = authRow.rates.t7; termKey = "7M"; }
+        else if (month >= 8 && month <= 13) { authorityRateBase = authRow.rates.t8_13; termKey = "8-13M"; }
+        else if (month >= 15) { authorityRateBase = authRow.rates.t15_plus; termKey = ">= 15M"; }
+    }
+
+    const authorityRate = calculateEquivalentRate(authorityRateBase, month, paymentMethod);
+
+    const lsmvRow = lsmvData.find(r => r.month === month);
+    let lsmvRate = 0;
+    if (lsmvRow) {
+        switch (paymentMethod) {
+            case 'monthly': lsmvRate = lsmvRow.monthly || 0; break;
+            case 'quarterly': lsmvRate = lsmvRow.quarterly || 0; break;
+            case '6months': lsmvRate = lsmvRow.semiAnnual || 0; break;
+            case 'yearly': lsmvRate = lsmvRow.annual || 0; break;
+            case 'prepaid': lsmvRate = lsmvRow.prepaid || 0; break;
+            default: lsmvRate = lsmvRow.maturity || 0;
+        }
+    } else {
+        lsmvRate = month >= 6 ? 8.05 : 5.40;
+    }
+
+    const spread = (authorityRate - listedRate).toFixed(2);
+    const nim = (lsmvRate - authorityRate).toFixed(2);
+    const casaCommitment = amount * 0.005;
+
+    const interestListed = Math.round(amount * (listedRate / 100) * (month / 12));
+    const interestAuthority = Math.round(amount * (authorityRate / 100) * (month / 12));
+    const interestDiff = interestAuthority - interestListed;
+
+    return { 
+        listedRate, authorityRate, authRole, lsmvRate, 
+        spread, nim, rangeLabel, authLabel: authRow ? authRow.label : '', casaCommitment,
+        interestListed, interestAuthority, interestDiff 
+    };
+  }, [authAmount, authMonth, depositType, paymentMethod]);
+
+  const formatCurrency = (value) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+  const getNimColor = (nimVal) => {
+    if (nimVal >= 1.0) return "text-emerald-600 bg-emerald-50 border-emerald-200";
+    if (nimVal > 0) return "text-yellow-600 bg-yellow-50 border-yellow-200";
+    return "text-red-600 bg-red-50 border-red-200";
+  };
+
+  const RenderTable = ({ data, title, type }) => (
+    <div className="bg-white rounded-xl shadow-lg border border-emerald-200 overflow-hidden mb-8">
+      <div className={`p-4 border-b border-emerald-100 flex justify-between items-center ${type === 'online' ? 'bg-blue-50' : 'bg-green-50'}`}>
+        <h3 className={`font-bold flex items-center gap-2 ${type === 'online' ? 'text-blue-800' : 'text-green-800'}`}>
+          {type === 'online' ? <Monitor className="w-5 h-5"/> : <Store className="w-5 h-5"/>} 
+          {title}
+        </h3>
+        <span className="text-xs font-medium px-2 py-1 rounded border bg-white/50">Hiệu lực 09/12/2025</span>
+      </div>
+      <div className="overflow-x-auto">
+        <table className="w-full text-sm text-left border-collapse">
+          <thead className={`text-xs uppercase ${type === 'online' ? 'bg-blue-100 text-blue-900' : 'bg-green-100 text-green-900'}`}>
+            <tr>
+              <th className="px-4 py-3 border-r border-white/50 font-bold min-w-[140px] sticky left-0 z-10">Số tiền</th>
+              <th className="px-2 py-3 border-r border-white/50 text-center font-bold">1-2M</th>
+              <th className="px-2 py-3 border-r border-white/50 text-center font-bold">3-5M</th>
+              <th className="px-2 py-3 border-r border-white/50 text-center font-bold">6M</th>
+              <th className="px-2 py-3 border-r border-white/50 text-center font-bold">7M</th>
+              <th className="px-2 py-3 border-r border-white/50 text-center font-bold">8-13M</th>
+              <th className="px-2 py-3 text-center font-bold">&ge; 15M</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-slate-100">
+            {data.map((row, index) => {
+               const isSelected = Number(authAmount) >= row.min && Number(authAmount) < row.max;
+               return (
+              <tr key={index} className={`hover:bg-slate-50 transition-colors ${isSelected ? 'bg-yellow-50 relative z-0' : ''}`}>
+                <td className={`px-4 py-3 font-bold text-slate-800 border-r border-slate-100 sticky left-0 
+                    ${isSelected ? 'bg-yellow-50 text-emerald-700 border-r-emerald-200' : 'bg-white'}`}>
+                   {row.label}
+                </td>
+                <td className="px-2 py-3 text-center font-medium text-emerald-600 border-r border-slate-100">{row.rates.t1_2?.toFixed(2)}</td>
+                <td className="px-2 py-3 text-center font-medium text-emerald-600 border-r border-slate-100">{row.rates.t3_5?.toFixed(2)}</td>
+                <td className="px-2 py-3 text-center font-medium text-emerald-600 border-r border-slate-100">{row.rates.t6?.toFixed(2)}</td>
+                <td className="px-2 py-3 text-center font-medium text-emerald-600 border-r border-slate-100">{row.rates.t7?.toFixed(2)}</td>
+                <td className="px-2 py-3 text-center font-medium text-emerald-600 border-r border-slate-100">{row.rates.t8_13?.toFixed(2)}</td>
+                <td className="px-2 py-3 text-center font-medium text-emerald-600">{row.rates.t15_plus?.toFixed(2)}</td>
+              </tr>
+            )})}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+
+  const ListingTableRender = ({ data, title, type }) => (
+    <div className="bg-white rounded-xl shadow border border-slate-200 overflow-hidden mb-8">
+        <div className={`p-3 font-bold flex justify-between items-center ${type === 'online' ? 'bg-blue-600 text-white' : 'bg-green-600 text-white'}`}>
+            <span className="flex items-center gap-2">
+                {type === 'online' ? <Monitor className="w-5 h-5"/> : <Store className="w-5 h-5"/>} 
+                {title}
+            </span>
+            <span className="text-xs bg-white/20 px-2 py-1 rounded">Hiệu lực từ 09/12/2025</span>
+        </div>
+        <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left">
+            <thead className={`${type === 'online' ? 'bg-blue-500' : 'bg-green-500'} text-white text-xs uppercase`}>
+                <tr>
+                    <th className={`p-3 whitespace-nowrap sticky left-0 z-10 ${type === 'online' ? 'bg-blue-500' : 'bg-green-500'}`}>Mức tiền</th>
+                    <th className="p-3 text-center">1-3W</th><th className="p-3 text-center">1T</th><th className="p-3 text-center">2T</th><th className="p-3 text-center">3-5T</th>
+                    <th className="p-3 text-center">6-11T</th><th className="p-3 text-center">12-13T</th><th className="p-3 text-center">15-18T</th><th className="p-3 text-center">24-36T</th>
+                </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+                {data.map((r,i) => {
+                    const isSelected = Number(authAmount) >= r.min && Number(authAmount) < r.max;
+                    return (
+                        <tr key={i} className={`hover:bg-slate-50 ${isSelected ? 'bg-yellow-50' : ''}`}>
+                            <td className={`p-3 border-r sticky left-0 ${isSelected ? 'bg-yellow-50 font-bold text-green-800' : 'bg-white'}`}>{r.range}</td>
+                            <td className="p-3 text-center border-r">{r.rates.w1_3?.toFixed(2)}</td>
+                            <td className="p-3 text-center border-r">{r.rates.m1?.toFixed(2)}</td>
+                            <td className="p-3 text-center border-r">{r.rates.m2?.toFixed(2)}</td>
+                            <td className="p-3 text-center border-r">{r.rates.m3?.toFixed(2)}</td>
+                            <td className="p-3 text-center border-r font-bold">{r.rates.m6?.toFixed(2)}</td>
+                            <td className="p-3 text-center border-r font-bold">{r.rates.m12?.toFixed(2)}</td>
+                            <td className="p-3 text-center border-r">{r.rates.m15?.toFixed(2)}</td>
+                            <td className="p-3 text-center">{r.rates.m24?.toFixed(2)}</td>
+                        </tr>
+                    )
+                })}
+            </tbody>
+            </table>
+        </div>
+    </div>
+  );
+
+  return (
+    <div className="flex flex-col h-full bg-slate-50 text-slate-900 font-sans min-h-screen">
+      
+      {/* HEADER */}
+      <header className="bg-gradient-to-r from-blue-900 to-indigo-800 text-white p-6 shadow-md">
+        <div className="max-w-6xl mx-auto">
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <Briefcase className="w-8 h-8 text-yellow-400" />
+            Công cụ Trình Lãi Suất Tiết Kiệm
+          </h1>
+          <p className="text-blue-100 mt-2 text-sm opacity-90">
+            Công cụ trình lãi suất tiết kiệm của VPBank Nha Trang
+          </p>
+        </div>
+      </header>
+
+      <main className="flex-1 max-w-6xl w-full mx-auto p-4 md:p-6 space-y-6">
+        
+        {/* TAB NAVIGATION */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 bg-white p-1.5 rounded-xl shadow-sm border border-slate-200">
+           <button onClick={() => setActiveTab('proposal')} className={`py-3 px-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'proposal' ? 'bg-indigo-100 text-indigo-800 shadow-sm ring-1 ring-indigo-200' : 'text-slate-500 hover:bg-slate-50'}`}><FileText className="w-4 h-4" /> Trình Thẩm Quyền</button>
+           <button onClick={() => setActiveTab('authority')} className={`py-3 px-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'authority' ? 'bg-emerald-100 text-emerald-800 shadow-sm ring-1 ring-emerald-200' : 'text-slate-500 hover:bg-slate-50'}`}><ShieldCheck className="w-4 h-4" /> Bảng LS Thẩm Quyền</button>
+           <button onClick={() => setActiveTab('listing')} className={`py-3 px-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'listing' ? 'bg-green-100 text-green-800 shadow-sm ring-1 ring-green-200' : 'text-slate-500 hover:bg-slate-50'}`}><List className="w-4 h-4" /> Bảng LS Niêm Yết</button>
+           <button onClick={() => setActiveTab('lsmv_table')} className={`py-3 px-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'lsmv_table' ? 'bg-blue-100 text-blue-800 shadow-sm ring-1 ring-blue-200' : 'text-slate-500 hover:bg-slate-50'}`}><Table className="w-4 h-4" /> Bảng LSMV</button>
+        </div>
+
+        {/* ==================== TAB 1: TRÌNH THẨM QUYỀN ==================== */}
+        {activeTab === 'proposal' && (
+          <div className="space-y-6 animate-in fade-in duration-300">
+            {/* Input */}
+            <div className="bg-white p-6 rounded-xl shadow-lg border border-indigo-100 grid grid-cols-1 md:grid-cols-2 gap-6 relative overflow-hidden">
+               <div className="absolute top-0 right-0 p-4 opacity-5"><FileText className="w-40 h-40 text-indigo-900" /></div>
+               
+               <div className="relative z-10 space-y-4">
+                {/* Amount */}
+                <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Số tiền huy động (VND)</label>
+                    <div className="relative">
+                    <DollarSign className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                    <input 
+                        type="text" 
+                        value={formatNumberWithDots(authAmount)} 
+                        onChange={(e) => {
+                            const val = e.target.value.replace(/\./g, '');
+                            if (!isNaN(val)) {
+                                setAuthAmount(val === '' ? '' : Number(val));
+                            }
+                        }}
+                        className="w-full pl-10 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 font-bold text-lg text-slate-800" 
+                    />
+                    </div>
+                    <div className="flex justify-between items-center mt-1">
+                        <p className="text-xs text-slate-500 italic">{formatCurrency(Number(authAmount) || 0)}</p>
+                        <span className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-100">
+                            Khung: {proposalData.authLabel}
+                        </span>
+                    </div>
+                </div>
+
+                {/* Deposit Type */}
+                <div>
+                    <label className="block text-sm font-bold text-slate-700 mb-2">Hình thức gửi</label>
+                    <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
+                        <button onClick={() => setDepositType('online')} className={`flex-1 py-2 px-4 rounded-md text-sm font-bold flex items-center justify-center gap-2 transition-all ${depositType === 'online' ? 'bg-white text-blue-600 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}><Monitor className="w-4 h-4"/> Online</button>
+                        <button onClick={() => setDepositType('counter')} className={`flex-1 py-2 px-4 rounded-md text-sm font-bold flex items-center justify-center gap-2 transition-all ${depositType === 'counter' ? 'bg-white text-indigo-700 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}><Store className="w-4 h-4"/> Tại Quầy</button>
+                    </div>
+                </div>
+              </div>
+
+              <div className="relative z-10">
+                <div className="space-y-4">
+                    {/* Kỳ Hạn */}
+                    <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2">Kỳ hạn gửi (Tháng)</label>
+                        <div className="relative">
+                        <Calendar className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                        <input 
+                            type="number" 
+                            value={authMonth} 
+                            onChange={(e) => setAuthMonth(e.target.value === '' ? '' : Number(e.target.value))}
+                            className="w-full pl-10 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 font-bold text-lg text-slate-800" placeholder="VD: 6, 12..." 
+                        />
+                        </div>
+                        <div className="flex gap-2 mt-2 flex-wrap">
+                        {[1, 3, 6, 7, 12, 13].map(m => (
+                            <button key={m} onClick={() => setAuthMonth(m)} className={`text-xs px-3 py-1 rounded border font-medium transition-colors ${Number(authMonth) === m ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-slate-50 hover:bg-indigo-50 border-slate-200'}`}>{m}T</button>
+                        ))}
+                        </div>
+                    </div>
+
+                    {/* Phương thức trả lãi */}
+                    <div>
+                        <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-1"><Clock className="w-4 h-4"/> Phương thức trả lãi</label>
+                        <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-indigo-500">
+                            <option value="maturity">Cuối kỳ (Mặc định)</option>
+                            {(Number(authMonth) || 0) >= 3 && <option value="monthly">Hàng tháng</option>}
+                            {(Number(authMonth) || 0) >= 6 && <option value="quarterly">Hàng quý</option>}
+                            {(Number(authMonth) || 0) >= 6 && <option value="6months">6 tháng/lần</option>}
+                            {(Number(authMonth) || 0) >= 12 && <option value="yearly">Hàng năm</option>}
+                            <option value="prepaid">Trả lãi trước</option>
+                        </select>
+                        {paymentMethod !== 'maturity' && <p className="text-[10px] text-indigo-600 mt-1 italic">* Niêm yết tra bảng, Thẩm quyền quy đổi.</p>}
+                    </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Kết quả */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <div className="lg:col-span-2 bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
+                    <div className="p-4 bg-slate-50 border-b border-slate-100 font-bold text-slate-700 flex items-center gap-2">
+                        <Table className="w-5 h-5 text-indigo-600"/> Chi Tiết Lãi Suất ({depositType === 'online' ? 'Online' : 'Tại Quầy'})
+                    </div>
+                    <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
+                        <div className="p-4 rounded-lg bg-green-50 border border-green-100 flex flex-col items-center justify-center">
+                            <span className="text-xs uppercase font-bold text-green-700 mb-1">Niêm Yết</span>
+                            <span className="text-2xl font-bold text-slate-800">{proposalData.listedRate ? proposalData.listedRate.toFixed(2) : '-'}%</span>
+                            {paymentMethod !== 'maturity' && <span className="text-[10px] text-slate-500">(Theo bảng)</span>}
+                        </div>
+                        <div className="hidden md:flex flex-col items-center justify-center"><ArrowRight className="w-6 h-6 text-slate-300"/></div>
+                        <div className="p-4 rounded-lg bg-indigo-50 border border-indigo-100 flex flex-col items-center justify-center ring-2 ring-indigo-200 shadow-sm relative">
+                             <span className="absolute -top-3 bg-indigo-600 text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Trần Phê Duyệt</span>
+                            <span className="text-xs uppercase font-bold text-indigo-700 mb-1">Thẩm Quyền</span>
+                            <span className="text-3xl font-extrabold text-indigo-700">{proposalData.authorityRate ? proposalData.authorityRate.toFixed(2) : '-'}%</span>
+                            {paymentMethod !== 'maturity' && <span className="text-[10px] text-indigo-500">(Quy đổi từ {proposalData.termKey})</span>}
+                            <span className="text-xs text-indigo-400 mt-1 text-center px-2 line-clamp-2">{proposalData.authRole}</span>
+                        </div>
+                    </div>
+                    <div className="mx-6 mb-6 mt-2 p-3 bg-blue-50 rounded-lg border border-blue-100 flex justify-between items-center">
+                        <div className="flex items-center gap-2"><ShieldCheck className="w-5 h-5 text-blue-600"/><span className="text-sm font-medium text-blue-800">Lãi suất Mua bán vốn (LSMV/FTP)</span></div>
+                        <span className="text-xl font-bold text-blue-700">{proposalData.lsmvRate.toFixed(2)}%</span>
+                        <span className="text-[10px] text-blue-500 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
+                            {paymentMethod === 'maturity' ? 'Cuối kỳ' : paymentMethod === 'prepaid' ? 'Đầu kỳ' : 'Định kỳ'}
+                        </span>
+                    </div>
+                </div>
+
+                <div className="bg-white rounded-xl shadow-md border border-slate-200 flex flex-col">
+                    <div className="p-4 bg-slate-50 border-b border-slate-100 font-bold text-slate-700 flex items-center gap-2">
+                        <TrendingUp className="w-5 h-5 text-orange-600"/> Hiệu Quả Deal
+                    </div>
+                    <div className="flex-1 p-6 flex flex-col justify-center space-y-6">
+                        {/* 1. Mức Ưu Đãi */}
+                        <div>
+                            <div className="flex justify-between items-end mb-1">
+                                <span className="text-sm font-bold text-slate-700 flex items-center gap-1"><ArrowUpRight className="w-4 h-4"/> Mức ưu đãi lãi suất</span>
+                                <span className="text-xs text-slate-400">(Thẩm quyền - Niêm yết)</span>
+                            </div>
+                            <div className="p-4 bg-orange-50 rounded-lg border border-orange-200 text-center">
+                                <span className="text-4xl font-extrabold text-orange-600">+{proposalData.spread}%</span>
+                                <div className="mt-2 pt-2 border-t border-orange-200 text-xs text-orange-800">
+                                    Tương ứng với lãi suất in trên sổ: <span className="font-bold">{proposalData.authorityRate ? proposalData.authorityRate.toFixed(2) : '-'}%</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div className="w-full h-px bg-slate-100"></div>
+                        
+                        {/* 2. NIM Huy Động */}
+                        <div>
+                            <div className="flex justify-between items-end mb-1">
+                                <span className="text-sm font-bold text-slate-700 flex items-center gap-1"><BarChart3 className="w-4 h-4"/> NIM Huy động</span>
+                            </div>
+                            <div className={`p-4 rounded-lg border text-center transition-colors ${getNimColor(Number(proposalData.nim))}`}>
+                                <span className="text-4xl font-extrabold flex items-center justify-center gap-2">
+                                    {Number(proposalData.nim) < 0 ? <AlertTriangle className="w-8 h-8"/> : <CheckCircle2 className="w-8 h-8"/>}
+                                    {proposalData.nim}%
+                                </span>
+                                <div className="mt-2 pt-2 border-t border-black/10 text-xs opacity-90">
+                                    Mức LSMV áp dụng: <span className="font-bold text-sm">{proposalData.lsmvRate.toFixed(2)}%</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="w-full h-px bg-slate-100"></div>
+
+                        {/* 3. Casa Commitment */}
+                        <div>
+                            <div className="flex justify-between items-end mb-1">
+                                <span className="text-sm font-bold text-indigo-800 flex items-center gap-1"><Wallet className="w-4 h-4"/> Số tiền cam kết Casa</span>
+                            </div>
+                            <div className="p-4 rounded-lg border border-indigo-200 bg-indigo-50 text-center">
+                                <div className="text-xl font-bold text-indigo-700 text-center">{formatCurrency(proposalData.casaCommitment)}</div>
+                                <div className="mt-2 pt-2 border-t border-indigo-200 text-xs text-indigo-600 italic">
+                                    (0.5% trên tổng tiền gửi)
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* 4. Interest Comparison */}
+                        <div className="mt-4 pt-4 border-t border-slate-100 space-y-3">
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-slate-500">Lãi nhận (Niêm yết):</span>
+                                <span className="font-medium text-slate-700">{formatCurrency(proposalData.interestListed)}</span>
+                            </div>
+                            <div className="flex justify-between items-center text-sm">
+                                <span className="text-indigo-600 font-medium">Lãi nhận (Thẩm quyền):</span>
+                                <span className="font-bold text-indigo-700">{formatCurrency(proposalData.interestAuthority)}</span>
+                            </div>
+                            <div className="p-3 bg-green-50 rounded-lg border border-green-200 flex justify-between items-center">
+                                <span className="text-xs font-bold text-green-800 uppercase flex items-center gap-1"><Coins className="w-3 h-3"/> Khách hàng lợi thêm:</span>
+                                <span className="text-lg font-extrabold text-green-700">+{formatCurrency(proposalData.interestDiff)}</span>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+          </div>
+        )}
+
+        {/* ==================== TAB 2: BẢNG LÃI SUẤT THẨM QUYỀN (CLEAN) ==================== */}
+        {activeTab === 'authority' && (
+          <div className="space-y-6 animate-in fade-in">
+            <div className="p-4 bg-blue-50 rounded-lg border border-blue-200 text-blue-800 text-sm mb-4 flex items-center gap-2">
+                <Info className="w-5 h-5"/> Bảng thẩm quyền hiện tại chỉ áp dụng cho lãi suất <strong>Cuối Kỳ</strong>. Các phương thức trả lãi khác được quy đổi tương đương.
+            </div>
+            {/* Counter Table */}
+            <RenderTable data={authorityData.counter} title="Bảng Lãi Suất Tại Quầy" type="counter" />
+            {/* Online Table */}
+            <RenderTable data={authorityData.online} title="Bảng Lãi Suất Online" type="online" />
+          </div>
+        )}
+
+        {/* ==================== TAB 3: BẢNG LS NIÊM YẾT (EXPANDED) ==================== */}
+        {activeTab === 'listing' && (
+          <div className="space-y-8 animate-in fade-in">
+             
+             {/* 3.1 BẢNG CUỐI KỲ */}
+             <ListingTableRender data={listingDataMaturity.counter} title="Niêm Yết Tại Quầy (Cuối Kỳ)" type="counter" />
+             <ListingTableRender data={listingDataMaturity.online} title="Niêm Yết Online (Cuối Kỳ)" type="online" />
+
+             {/* 3.2 BẢNG ĐỊNH KỲ & TRẢ TRƯỚC */}
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Trả trước */}
+                <div className="bg-white rounded-xl shadow border border-slate-200 overflow-hidden">
+                    <div className="p-3 bg-green-600 text-white font-bold flex items-center gap-2"><ArrowUpRight className="w-5 h-5"/> Lãi Suất Trả Trước (Phân Tầng)</div>
+                    <div className="overflow-x-auto h-[300px]">
+                        <table className="w-full text-sm">
+                            <thead className="bg-green-500 text-white text-xs sticky top-0">
+                                <tr>
+                                    <th className="p-3">Kỳ hạn</th>
+                                    <th className="p-3 text-right">&lt; 5 Tỷ</th>
+                                    <th className="p-3 text-right">≥ 5 Tỷ</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y">
+                                {Object.entries(listingDataPrepaid[0].rates).map(([k,v]) => (
+                                    <tr key={k}>
+                                        <td className="p-3 font-medium">{k} Tháng</td>
+                                        <td className="p-3 text-right font-bold text-slate-600">{v}</td>
+                                        <td className="p-3 text-right font-bold text-green-700">{listingDataPrepaid[1].rates[k]}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                {/* Định kỳ Hàng tháng */}
+                <div className="bg-white rounded-xl shadow border border-slate-200 overflow-hidden">
+                    <div className="p-3 bg-orange-500 text-white font-bold flex items-center gap-2"><Clock className="w-5 h-5"/> Lãi Suất Hàng Tháng</div>
+                    <div className="overflow-x-auto h-[300px]">
+                        <table className="w-full text-sm">
+                            <thead className="bg-orange-400 text-white text-xs sticky top-0"><tr><th className="p-3">Kỳ hạn</th><th className="p-3 text-right">Lãi suất (%)</th></tr></thead>
+                            <tbody className="divide-y">
+                                {Object.entries(listingDataPeriodic.monthly).map(([k,v]) => (
+                                    <tr key={k}><td className="p-3 font-medium">{k} Tháng</td><td className="p-3 text-right font-bold">{v}</td></tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+             </div>
+          </div>
+        )}
+
+         {/* TAB LSMV (Đã cập nhật chi tiết) */}
+         {activeTab === 'lsmv_table' && (
+             <div className="space-y-6 animate-in fade-in">
+                <div className="bg-white rounded-xl shadow overflow-hidden">
+                    <div className="p-4 bg-blue-50 border-b border-blue-100 font-bold text-blue-800 flex justify-between items-center">
+                        <span>Bảng Lãi Suất Mua Bán Vốn (FTP) Chi Tiết</span>
+                        <span className="text-xs bg-blue-100 px-2 py-1 rounded">Hiệu lực từ 09/12/2025</span>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left">
+                            <thead className="bg-slate-100 text-slate-600 text-xs uppercase sticky top-0">
+                                <tr>
+                                    <th className="p-3 text-left min-w-[80px] border-r border-slate-200 sticky left-0 bg-slate-100 z-10">Kỳ hạn</th>
+                                    <th className="p-3 text-center border-r border-slate-200">Cuối kỳ</th>
+                                    <th className="p-3 text-center border-r border-slate-200">1M (Tháng)</th>
+                                    <th className="p-3 text-center border-r border-slate-200">3M (Quý)</th>
+                                    <th className="p-3 text-center border-r border-slate-200">6M</th>
+                                    <th className="p-3 text-center border-r border-slate-200">12M (Năm)</th>
+                                    <th className="p-3 text-center bg-blue-50 text-blue-800">Đầu kỳ</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {lsmvData.map((r,i) => (
+                                    <tr key={i} className="hover:bg-blue-50 transition-colors">
+                                        <td className="p-3 font-bold text-slate-800 border-r border-slate-100 sticky left-0 bg-white">{r.label}</td>
+                                        <td className="p-3 text-center font-bold text-indigo-700 border-r border-slate-100">{r.maturity?.toFixed(2)}%</td>
+                                        <td className="p-3 text-center text-slate-600 border-r border-slate-100">{r.monthly ? r.monthly.toFixed(2) + '%' : '-'}</td>
+                                        <td className="p-3 text-center text-slate-600 border-r border-slate-100">{r.quarterly ? r.quarterly.toFixed(2) + '%' : '-'}</td>
+                                        <td className="p-3 text-center text-slate-600 border-r border-slate-100">{r.semiAnnual ? r.semiAnnual.toFixed(2) + '%' : '-'}</td>
+                                        <td className="p-3 text-center text-slate-600 border-r border-slate-100">{r.annual ? r.annual.toFixed(2) + '%' : '-'}</td>
+                                        <td className="p-3 text-center font-bold text-blue-700 bg-blue-50/30">{r.prepaid ? r.prepaid.toFixed(2) + '%' : '-'}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {/* Explanation Block */}
+                <div className="bg-blue-50 p-5 rounded-xl border border-blue-200">
+                    <h4 className="font-bold text-blue-900 flex items-center gap-2 mb-3">
+                        <BookOpen className="w-5 h-5"/> Giải thích các loại Lãi suất Mua bán vốn (FTP)
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-blue-800">
+                        <div className="bg-white p-3 rounded-lg shadow-sm">
+                            <span className="font-bold block mb-1 text-indigo-600">1. LSMV Cuối Kỳ</span>
+                            Áp dụng khi huy động vốn trả lãi vào cuối kỳ hạn. Đây thường là mức lãi suất FTP cao nhất.
+                        </div>
+                        <div className="bg-white p-3 rounded-lg shadow-sm">
+                            <span className="font-bold block mb-1 text-orange-600">2. LSMV Định Kỳ</span>
+                            Áp dụng khi khách hàng nhận lãi hàng tháng, hàng quý, v.v. Lãi suất này thấp hơn cuối kỳ do yếu tố dòng tiền trả ra sớm hơn.
+                        </div>
+                        <div className="bg-white p-3 rounded-lg shadow-sm">
+                            <span className="font-bold block mb-1 text-blue-600">3. LSMV Đầu Kỳ</span>
+                            Áp dụng khi trả lãi ngay lúc gửi tiền (Prepaid). Mức này thấp nhất do ngân hàng phải chi trả toàn bộ lãi ngay từ đầu.
+                        </div>
+                    </div>
+                </div>
+             </div>
+        )}
+
+      </main>
+    </div>
+  );
+};
+
+export default InterestApprovalTool;
+
+
+
