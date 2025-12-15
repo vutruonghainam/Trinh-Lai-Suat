@@ -5,11 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Công cụ Trình Lãi Suất Tiết Kiệm VPBank</title>
     
+    <!-- 1. Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- 2. React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
+    <!-- 3. Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
@@ -20,6 +23,8 @@
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        /* Table styles */
+        th, td { white-space: nowrap; }
     </style>
 </head>
 <body>
@@ -32,12 +37,12 @@
             const [activeTab, setActiveTab] = useState('proposal'); 
             
             // --- STATE ---
-            const [authAmount, setAuthAmount] = useState(1000000000); // 1 Tỷ
-            const [authMonth, setAuthMonth] = useState(6); // 6 Tháng
-            const [depositType, setDepositType] = useState('online'); // Mặc định Online
+            const [authAmount, setAuthAmount] = useState(1000000000); 
+            const [authMonth, setAuthMonth] = useState(6); 
+            const [depositType, setDepositType] = useState('online'); 
             const [paymentMethod, setPaymentMethod] = useState('maturity'); 
 
-            // Logic reset phương thức trả lãi khi đổi kỳ hạn
+            // Logic reset phương thức trả lãi
             useEffect(() => {
                 const m = Number(authMonth) || 0;
                 if (m < 3 && (paymentMethod === 'monthly' || paymentMethod === 'quarterly')) setPaymentMethod('maturity');
@@ -52,35 +57,49 @@
             };
 
             const formatCurrency = (value) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
+            
+            const getNimColor = (nimVal) => {
+                if (nimVal >= 1.0) return "text-emerald-600 bg-emerald-50 border-emerald-200";
+                if (nimVal > 0) return "text-yellow-600 bg-yellow-50 border-yellow-200";
+                return "text-red-600 bg-red-50 border-red-200";
+            };
 
             // ==========================================
-            // 1. DATA: NIÊM YẾT
+            // 1. DATA: NIÊM YẾT (HIỆU LỰC 09/12/2025)
             // ==========================================
             const listingDataMaturity = {
                 counter: [
-                { range: '< 1 tỷ', min: 0, max: 1000000000, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 5.80, m7: 5.80, m8: 5.80, m9: 5.80, m10: 5.80, m11: 5.80, m12: 5.80, m13: 5.80, m15: 5.80, m18: 5.80, m24: 5.80, m36: 5.80 } },
-                { range: '1 tỷ - < 3 tỷ', min: 1000000000, max: 3000000000, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 5.80, m7: 5.80, m8: 5.80, m9: 5.80, m10: 5.80, m11: 5.80, m12: 5.80, m13: 5.80, m15: 5.80, m18: 5.80, m24: 5.80, m36: 5.80 } },
-                { range: '3 tỷ - < 10 tỷ', min: 3000000000, max: 10000000000, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 5.80, m7: 5.80, m8: 5.80, m9: 5.80, m10: 5.80, m11: 5.80, m12: 5.80, m13: 5.80, m15: 5.80, m18: 5.80, m24: 5.80, m36: 5.80 } },
-                { range: '10 tỷ - < 50 tỷ', min: 10000000000, max: 50000000000, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 5.90, m7: 5.90, m8: 5.90, m9: 5.90, m10: 5.90, m11: 5.90, m12: 5.90, m13: 5.90, m15: 5.90, m18: 5.90, m24: 5.90, m36: 5.90 } },
-                { range: '≥ 50 tỷ', min: 50000000000, max: Infinity, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 6.00, m7: 6.00, m8: 6.00, m9: 6.00, m10: 6.00, m11: 6.00, m12: 6.00, m13: 6.00, m15: 6.00, m18: 6.00, m24: 6.00, m36: 6.00 } },
+                    { range: '< 1 tỷ', min: 0, max: 1000000000, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 5.80, m7: 5.80, m8: 5.80, m9: 5.80, m10: 5.80, m11: 5.80, m12: 5.80, m13: 5.80, m15: 5.80, m18: 5.80, m24: 5.80, m36: 5.80 } },
+                    { range: '1 tỷ - < 3 tỷ', min: 1000000000, max: 3000000000, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 5.80, m7: 5.80, m8: 5.80, m9: 5.80, m10: 5.80, m11: 5.80, m12: 5.80, m13: 5.80, m15: 5.80, m18: 5.80, m24: 5.80, m36: 5.80 } },
+                    { range: '3 tỷ - < 10 tỷ', min: 3000000000, max: 10000000000, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 5.80, m7: 5.80, m8: 5.80, m9: 5.80, m10: 5.80, m11: 5.80, m12: 5.80, m13: 5.80, m15: 5.80, m18: 5.80, m24: 5.80, m36: 5.80 } },
+                    { range: '10 tỷ - < 50 tỷ', min: 10000000000, max: 50000000000, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 5.90, m7: 5.90, m8: 5.90, m9: 5.90, m10: 5.90, m11: 5.90, m12: 5.90, m13: 5.90, m15: 5.90, m18: 5.90, m24: 5.90, m36: 5.90 } },
+                    { range: '≥ 50 tỷ', min: 50000000000, max: Infinity, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 6.00, m7: 6.00, m8: 6.00, m9: 6.00, m10: 6.00, m11: 6.00, m12: 6.00, m13: 6.00, m15: 6.00, m18: 6.00, m24: 6.00, m36: 6.00 } },
                 ],
                 online: [
-                { range: '< 1 tỷ', min: 0, max: 1000000000, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 6.00, m7: 6.00, m8: 6.00, m9: 6.00, m10: 6.00, m11: 6.00, m12: 6.00, m13: 6.00, m15: 6.00, m18: 6.00, m24: 6.00, m36: 6.00 } },
-                { range: '1 tỷ - < 3 tỷ', min: 1000000000, max: 3000000000, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 6.00, m7: 6.00, m8: 6.00, m9: 6.00, m10: 6.00, m11: 6.00, m12: 6.00, m13: 6.00, m15: 6.00, m18: 6.00, m24: 6.00, m36: 6.00 } },
-                { range: '3 tỷ - < 10 tỷ', min: 3000000000, max: 10000000000, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 6.00, m7: 6.00, m8: 6.00, m9: 6.00, m10: 6.00, m11: 6.00, m12: 6.00, m13: 6.00, m15: 6.00, m18: 6.00, m24: 6.00, m36: 6.00 } },
-                { range: '10 tỷ - < 50 tỷ', min: 10000000000, max: 50000000000, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 6.10, m7: 6.10, m8: 6.10, m9: 6.10, m10: 6.10, m11: 6.10, m12: 6.10, m13: 6.10, m15: 6.10, m18: 6.10, m24: 6.10, m36: 6.10 } },
-                { range: '≥ 50 tỷ', min: 50000000000, max: Infinity, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 6.20, m7: 6.20, m8: 6.20, m9: 6.20, m10: 6.20, m11: 6.20, m12: 6.20, m13: 6.20, m15: 6.20, m18: 6.20, m24: 6.20, m36: 6.20 } },
+                    { range: '< 1 tỷ', min: 0, max: 1000000000, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 6.00, m7: 6.00, m8: 6.00, m9: 6.00, m10: 6.00, m11: 6.00, m12: 6.00, m13: 6.00, m15: 6.00, m18: 6.00, m24: 6.00, m36: 6.00 } },
+                    { range: '1 tỷ - < 3 tỷ', min: 1000000000, max: 3000000000, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 6.00, m7: 6.00, m8: 6.00, m9: 6.00, m10: 6.00, m11: 6.00, m12: 6.00, m13: 6.00, m15: 6.00, m18: 6.00, m24: 6.00, m36: 6.00 } },
+                    { range: '3 tỷ - < 10 tỷ', min: 3000000000, max: 10000000000, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 6.00, m7: 6.00, m8: 6.00, m9: 6.00, m10: 6.00, m11: 6.00, m12: 6.00, m13: 6.00, m15: 6.00, m18: 6.00, m24: 6.00, m36: 6.00 } },
+                    { range: '10 tỷ - < 50 tỷ', min: 10000000000, max: 50000000000, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 6.10, m7: 6.10, m8: 6.10, m9: 6.10, m10: 6.10, m11: 6.10, m12: 6.10, m13: 6.10, m15: 6.10, m18: 6.10, m24: 6.10, m36: 6.10 } },
+                    { range: '≥ 50 tỷ', min: 50000000000, max: Infinity, rates: { w1_3: 0.40, m1: 4.75, m2: 4.75, m3: 4.75, m4: 4.75, m5: 4.75, m6: 6.20, m7: 6.20, m8: 6.20, m9: 6.20, m10: 6.20, m11: 6.20, m12: 6.20, m13: 6.20, m15: 6.20, m18: 6.20, m24: 6.20, m36: 6.20 } },
                 ]
             };
 
             const listingDataPrepaid = [
                 {
-                range: '< 5 tỷ', min: 0, max: 5000000000,
-                rates: { 1: 4.73, 2: 4.71, 3: 4.69, 4: 4.68, 5: 4.66, 6: 5.64, 7: 5.61, 8: 5.58, 9: 5.56, 10: 5.53, 11: 5.51, 12: 5.48, 13: 5.46, 15: 5.41, 18: 5.34, 24: 5.20, 36: 4.94 }
+                    range: '< 5 tỷ', min: 0, max: 5000000000,
+                    rates: {
+                        1: 4.73, 2: 4.71, 3: 4.69, 4: 4.68, 5: 4.66,
+                        6: 5.64, 7: 5.61, 8: 5.58, 9: 5.56, 10: 5.53, 11: 5.51,
+                        12: 5.48, 13: 5.46, 15: 5.41, 18: 5.34, 24: 5.20, 36: 4.94
+                    }
                 },
                 {
-                range: '≥ 5 tỷ', min: 5000000000, max: Infinity,
-                rates: { 1: 4.73, 2: 4.71, 3: 4.69, 4: 4.68, 5: 4.66, 6: 5.64, 7: 5.61, 8: 5.58, 9: 5.56, 10: 5.53, 11: 5.51, 12: 5.48, 13: 5.46, 15: 5.41, 18: 5.34, 24: 5.20, 36: 4.94 }
+                    range: '≥ 5 tỷ', min: 5000000000, max: Infinity,
+                    rates: {
+                        1: 4.73, 2: 4.71, 3: 4.69, 4: 4.68, 5: 4.66,
+                        6: 5.64, 7: 5.61, 8: 5.58, 9: 5.56, 10: 5.53, 11: 5.51,
+                        12: 5.48, 13: 5.46, 15: 5.41, 18: 5.34, 24: 5.20, 36: 4.94
+                    }
                 }
             ];
 
@@ -102,20 +121,20 @@
 
             const authorityData = {
                 counter: [
-                { min: 100000000, max: 500000000, label: '100tr - < 500tr', auth: 'Level1', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.00, t7: 7.10, t8_13: 6.70, t15_plus: 6.70 } },
-                { min: 500000000, max: 1000000000, label: '500tr - < 1 tỷ', auth: 'Level1', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.10, t7: 7.20, t8_13: 6.80, t15_plus: 6.80 } },
-                { min: 1000000000, max: 3000000000, label: '>= 1 tỷ', auth: 'Level1', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.10, t7: 7.20, t8_13: 6.80, t15_plus: 6.80 } },
-                { min: 3000000000, max: 10000000000, label: '>= 3 tỷ', auth: 'Level2', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.20, t7: 7.30, t8_13: 6.90, t15_plus: 6.90 } },
-                { min: 10000000000, max: 50000000000, label: '>= 10 tỷ', auth: 'Level3', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.30, t7: 7.40, t8_13: 7.05, t15_plus: 7.05 } },
-                { min: 50000000000, max: Infinity, label: '>= 50 tỷ', auth: 'Level3', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.40, t7: 7.50, t8_13: 7.10, t15_plus: 7.10 } },
+                    { min: 100000000, max: 500000000, label: '100tr - < 500tr', auth: 'Level1', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.00, t7: 7.10, t8_13: 6.70, t15_plus: 6.70 } },
+                    { min: 500000000, max: 1000000000, label: '500tr - < 1 tỷ', auth: 'Level1', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.10, t7: 7.20, t8_13: 6.80, t15_plus: 6.80 } },
+                    { min: 1000000000, max: 3000000000, label: '>= 1 tỷ', auth: 'Level1', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.10, t7: 7.20, t8_13: 6.80, t15_plus: 6.80 } },
+                    { min: 3000000000, max: 10000000000, label: '>= 3 tỷ', auth: 'Level2', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.20, t7: 7.30, t8_13: 6.90, t15_plus: 6.90 } },
+                    { min: 10000000000, max: 50000000000, label: '>= 10 tỷ', auth: 'Level3', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.30, t7: 7.40, t8_13: 7.05, t15_plus: 7.05 } },
+                    { min: 50000000000, max: Infinity, label: '>= 50 tỷ', auth: 'Level3', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.40, t7: 7.50, t8_13: 7.10, t15_plus: 7.10 } },
                 ],
                 online: [
-                { min: 100000000, max: 300000000, label: '100tr - < 300tr', auth: 'Level1', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.10, t7: 7.20, t8_13: 6.80, t15_plus: 6.80 } },
-                { min: 300000000, max: 1000000000, label: '300tr - < 1 tỷ', auth: 'Level1', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.20, t7: 7.30, t8_13: 6.90, t15_plus: 6.90 } },
-                { min: 1000000000, max: 3000000000, label: '>= 1 tỷ', auth: 'Level1', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.20, t7: 7.30, t8_13: 6.90, t15_plus: 6.90 } },
-                { min: 3000000000, max: 10000000000, label: '>= 3 tỷ', auth: 'Level2', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.30, t7: 7.40, t8_13: 7.00, t15_plus: 7.00 } },
-                { min: 10000000000, max: 50000000000, label: '>= 10 tỷ', auth: 'Level3', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.40, t7: 7.50, t8_13: 7.15, t15_plus: 7.15 } },
-                { min: 50000000000, max: Infinity, label: '>= 50 tỷ', auth: 'Level3', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.50, t7: 7.60, t8_13: 7.20, t15_plus: 7.20 } },
+                    { min: 100000000, max: 300000000, label: '100tr - < 300tr', auth: 'Level1', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.10, t7: 7.20, t8_13: 6.80, t15_plus: 6.80 } },
+                    { min: 300000000, max: 1000000000, label: '300tr - < 1 tỷ', auth: 'Level1', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.20, t7: 7.30, t8_13: 6.90, t15_plus: 6.90 } },
+                    { min: 1000000000, max: 3000000000, label: '>= 1 tỷ', auth: 'Level1', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.20, t7: 7.30, t8_13: 6.90, t15_plus: 6.90 } },
+                    { min: 3000000000, max: 10000000000, label: '>= 3 tỷ', auth: 'Level2', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.30, t7: 7.40, t8_13: 7.00, t15_plus: 7.00 } },
+                    { min: 10000000000, max: 50000000000, label: '>= 10 tỷ', auth: 'Level3', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.40, t7: 7.50, t8_13: 7.15, t15_plus: 7.15 } },
+                    { min: 50000000000, max: Infinity, label: '>= 50 tỷ', auth: 'Level3', rates: { t1_2: 4.75, t3_5: 4.75, t6: 7.50, t7: 7.60, t8_13: 7.20, t15_plus: 7.20 } },
                 ]
             };
 
@@ -148,9 +167,6 @@
                 { label: '60 Tháng', month: 60, maturity: 7.85, monthly: 6.64, quarterly: 6.68, semiAnnual: 6.73, annual: 6.85, prepaid: 5.64 }
             ];
 
-            // ==========================================
-            // HÀM TÍNH LÃI SUẤT QUY ĐỔI
-            // ==========================================
             const calculateEquivalentRate = (baseRateEndOfTerm, months, method) => {
                 if (!baseRateEndOfTerm || !months) return 0;
                 const R_ck = baseRateEndOfTerm / 100;
@@ -160,7 +176,6 @@
                 switch (method) {
                 case 'maturity': return baseRateEndOfTerm;
                 case 'monthly': R_kq = (Math.pow(1 + (R_ck * n) / 12, 1 / n) - 1) * 12; break;
-                // FIX: Quý có 3 tháng nên mũ là 3/n (không phải 4/n)
                 case 'quarterly': R_kq = (Math.pow(1 + (R_ck * n) / 12, 3 / n) - 1) * 4; break;
                 case '6months': R_kq = (Math.pow(1 + (R_ck * n) / 12, 6 / n) - 1) * 2; break;
                 case 'yearly': R_kq = (Math.pow(1 + (R_ck * n) / 12, 12 / n) - 1) * 1; break;
@@ -170,14 +185,10 @@
                 return R_kq * 100;
             };
 
-            // ==========================================
-            // LOGIC TÍNH TOÁN
-            // ==========================================
             const proposalData = useMemo(() => {
                 const amount = Number(authAmount) || 0;
                 const month = Number(authMonth) || 0;
 
-                // A. XÁC ĐỊNH LÃI SUẤT NIÊM YẾT
                 let listedRate = 0;
                 let rangeLabel = '';
 
@@ -203,7 +214,6 @@
                     rangeLabel = 'Chung (Periodic)';
                 }
 
-                // B. XÁC ĐỊNH LÃI SUẤT THẨM QUYỀN
                 const currentAuthorityTable = depositType === 'online' ? authorityData.online : authorityData.counter;
                 const authRow = currentAuthorityTable.find(r => amount >= r.min && amount < r.max);
                 let authorityRateBase = 0;
@@ -222,7 +232,6 @@
 
                 const authorityRate = calculateEquivalentRate(authorityRateBase, month, paymentMethod);
 
-                // C. LSMV (FTP)
                 const lsmvRow = lsmvData.find(r => r.month === month);
                 let lsmvRate = 0;
                 if (lsmvRow) {
@@ -253,12 +262,48 @@
                 };
             }, [authAmount, authMonth, depositType, paymentMethod]);
 
-            const getNimColor = (nimVal) => {
-                if (nimVal >= 1.0) return "text-emerald-600 bg-emerald-50 border-emerald-200";
-                if (nimVal > 0) return "text-yellow-600 bg-yellow-50 border-yellow-200";
-                return "text-red-600 bg-red-50 border-red-200";
-            };
+            // Listing Table Component
+            const ListingTableRender = ({ data, title, type }) => (
+                <div className="bg-white rounded-xl shadow border border-slate-200 overflow-hidden mb-8">
+                    <div className={`p-3 font-bold flex justify-between items-center ${type === 'online' ? 'bg-blue-600 text-white' : 'bg-green-600 text-white'}`}>
+                        <span className="flex items-center gap-2">
+                            {type === 'online' ? '💻' : '🏪'} {title}
+                        </span>
+                        <span className="text-xs bg-white/20 px-2 py-1 rounded">Hiệu lực từ 09/12/2025</span>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left">
+                        <thead className={`${type === 'online' ? 'bg-blue-500' : 'bg-green-500'} text-white text-xs uppercase`}>
+                            <tr>
+                                <th className={`p-3 whitespace-nowrap sticky left-0 z-10 ${type === 'online' ? 'bg-blue-500' : 'bg-green-500'}`}>Mức tiền</th>
+                                <th className="p-3 text-center">1-3W</th><th className="p-3 text-center">1T</th><th className="p-3 text-center">2T</th><th className="p-3 text-center">3-5T</th>
+                                <th className="p-3 text-center">6-11T</th><th className="p-3 text-center">12-13T</th><th className="p-3 text-center">15-18T</th><th className="p-3 text-center">24-36T</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                            {data.map((r,i) => {
+                                const isSelected = Number(authAmount) >= r.min && Number(authAmount) < r.max;
+                                return (
+                                    <tr key={i} className={`hover:bg-slate-50 ${isSelected ? 'bg-yellow-50' : ''}`}>
+                                        <td className={`p-3 border-r sticky left-0 ${isSelected ? 'bg-yellow-50 font-bold text-green-800' : 'bg-white'}`}>{r.range}</td>
+                                        <td className="p-3 text-center border-r">{r.rates.w1_3 ? r.rates.w1_3.toFixed(2) : '-'}</td>
+                                        <td className="p-3 text-center border-r">{r.rates.m1 ? r.rates.m1.toFixed(2) : '-'}</td>
+                                        <td className="p-3 text-center border-r">{r.rates.m2 ? r.rates.m2.toFixed(2) : '-'}</td>
+                                        <td className="p-3 text-center border-r">{r.rates.m3_5 ? r.rates.m3_5.toFixed(2) : '-'}</td>
+                                        <td className="p-3 text-center border-r font-bold">{r.rates.m6 ? r.rates.m6.toFixed(2) : '-'}</td>
+                                        <td className="p-3 text-center border-r font-bold">{r.rates.m12 ? r.rates.m12.toFixed(2) : '-'}</td>
+                                        <td className="p-3 text-center border-r">{r.rates.m15 ? r.rates.m15.toFixed(2) : '-'}</td>
+                                        <td className="p-3 text-center">{r.rates.m36 ? r.rates.m36.toFixed(2) : '-'}</td>
+                                    </tr>
+                                )
+                            })}
+                        </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
 
+            // Authority Table Component
             const RenderTable = ({ data, title, type }) => (
                 <div className="bg-white rounded-xl shadow-lg border border-emerald-200 overflow-hidden mb-8">
                 <div className={`p-4 border-b border-emerald-100 flex justify-between items-center ${type === 'online' ? 'bg-blue-50' : 'bg-green-50'}`}>
@@ -303,64 +348,16 @@
                 </div>
             );
 
-            const ListingTableRender = ({ data, title, type }) => (
-                <div className="bg-white rounded-xl shadow border border-slate-200 overflow-hidden mb-8">
-                    <div className={`p-3 font-bold flex justify-between items-center ${type === 'online' ? 'bg-blue-600 text-white' : 'bg-green-600 text-white'}`}>
-                        <span className="flex items-center gap-2">
-                            {type === 'online' ? '💻' : '🏪'} {title}
-                        </span>
-                        <span className="text-xs bg-white/20 px-2 py-1 rounded">Hiệu lực từ 09/12/2025</span>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left">
-                        <thead className={`${type === 'online' ? 'bg-blue-500' : 'bg-green-500'} text-white text-xs uppercase`}>
-                            <tr>
-                                <th className={`p-3 whitespace-nowrap sticky left-0 z-10 ${type === 'online' ? 'bg-blue-500' : 'bg-green-500'}`}>Mức tiền</th>
-                                <th className="p-3 text-center">1-3W</th><th className="p-3 text-center">1T</th><th className="p-3 text-center">2T</th><th className="p-3 text-center">3-5T</th>
-                                <th className="p-3 text-center">6-11T</th><th className="p-3 text-center">12-13T</th><th className="p-3 text-center">15-18T</th><th className="p-3 text-center">24-36T</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {data.map((r,i) => {
-                                const isSelected = Number(authAmount) >= r.min && Number(authAmount) < r.max;
-                                return (
-                                    <tr key={i} className={`hover:bg-slate-50 ${isSelected ? 'bg-yellow-50' : ''}`}>
-                                        <td className={`p-3 border-r sticky left-0 ${isSelected ? 'bg-yellow-50 font-bold text-green-800' : 'bg-white'}`}>{r.range}</td>
-                                        <td className="p-3 text-center border-r">{r.rates.w1_3.toFixed(2)}</td>
-                                        <td className="p-3 text-center border-r">{r.rates.m1.toFixed(2)}</td>
-                                        <td className="p-3 text-center border-r">{r.rates.m2.toFixed(2)}</td>
-                                        <td className="p-3 text-center border-r">{r.rates.m3_5.toFixed(2)}</td>
-                                        <td className="p-3 text-center border-r font-bold">{r.rates.m6.toFixed(2)}</td>
-                                        <td className="p-3 text-center border-r font-bold">{r.rates.m12.toFixed(2)}</td>
-                                        <td className="p-3 text-center border-r">{r.rates.m15.toFixed(2)}</td>
-                                        <td className="p-3 text-center">{r.rates.m36.toFixed(2)}</td>
-                                    </tr>
-                                )
-                            })}
-                        </tbody>
-                        </table>
-                    </div>
-                </div>
-            );
-
             return (
                 <div className="flex flex-col h-full bg-slate-50 text-slate-900 font-sans min-h-screen">
-                
-                {/* HEADER */}
                 <header className="bg-gradient-to-r from-blue-900 to-indigo-800 text-white p-6 shadow-md">
                     <div className="max-w-6xl mx-auto">
-                    <h1 className="text-2xl font-bold flex items-center gap-2">
-                        💼 Công cụ Trình Lãi Suất Tiết Kiệm
-                    </h1>
-                    <p className="text-blue-100 mt-2 text-sm opacity-90">
-                        Công cụ trình lãi suất tiết kiệm của VPBank Nha Trang
-                    </p>
+                    <h1 className="text-2xl font-bold flex items-center gap-2">💼 Công cụ Trình Lãi Suất Tiết Kiệm</h1>
+                    <p className="text-blue-100 mt-2 text-sm opacity-90">VPBank Nha Trang</p>
                     </div>
                 </header>
 
                 <main className="flex-1 max-w-6xl w-full mx-auto p-4 md:p-6 space-y-6">
-                    
-                    {/* TAB NAVIGATION */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 bg-white p-1.5 rounded-xl shadow-sm border border-slate-200">
                     <button onClick={() => setActiveTab('proposal')} className={`py-3 px-2 rounded-lg text-sm font-bold flex justify-center gap-2 ${activeTab === 'proposal' ? 'bg-indigo-100 text-indigo-800 shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}>📝 Trình Thẩm Quyền</button>
                     <button onClick={() => setActiveTab('authority')} className={`py-3 px-2 rounded-lg text-sm font-bold flex justify-center gap-2 ${activeTab === 'authority' ? 'bg-emerald-100 text-emerald-800 shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}>🛡️ Bảng LS Thẩm Quyền</button>
@@ -409,7 +406,7 @@
                                 />
                                 </div>
                                 <div className="flex gap-2 mt-2 flex-wrap">
-                                {[6, 7, 12, 13].map(m => (
+                                {[1, 3, 6, 7, 12, 13].map(m => (
                                     <button key={m} onClick={() => setAuthMonth(m)} className={`text-xs px-3 py-1 rounded border font-medium ${Number(authMonth) === m ? 'bg-indigo-600 text-white' : 'bg-slate-50'}`}>{m}T</button>
                                 ))}
                                 </div>
@@ -581,3 +578,6 @@
     </script>
 </body>
 </html>
+
+
+
