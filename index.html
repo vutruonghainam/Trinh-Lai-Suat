@@ -84,25 +84,19 @@
                 ]
             };
 
+            // 1.2 Lãi suất Trả trước
             const listingDataPrepaid = [
                 {
                     range: '< 5 tỷ', min: 0, max: 5000000000,
-                    rates: {
-                        1: 4.73, 2: 4.71, 3: 4.69, 4: 4.68, 5: 4.66,
-                        6: 5.64, 7: 5.61, 8: 5.58, 9: 5.56, 10: 5.53, 11: 5.51,
-                        12: 5.48, 13: 5.46, 15: 5.41, 18: 5.34, 24: 5.20, 36: 4.94
-                    }
+                    rates: { 1: 4.73, 2: 4.71, 3: 4.69, 4: 4.68, 5: 4.66, 6: 5.64, 7: 5.61, 8: 5.58, 9: 5.56, 10: 5.53, 11: 5.51, 12: 5.48, 13: 5.46, 15: 5.41, 18: 5.34, 24: 5.20, 36: 4.94 }
                 },
                 {
                     range: '≥ 5 tỷ', min: 5000000000, max: Infinity,
-                    rates: {
-                        1: 4.73, 2: 4.71, 3: 4.69, 4: 4.68, 5: 4.66,
-                        6: 5.64, 7: 5.61, 8: 5.58, 9: 5.56, 10: 5.53, 11: 5.51,
-                        12: 5.48, 13: 5.46, 15: 5.41, 18: 5.34, 24: 5.20, 36: 4.94
-                    }
+                    rates: { 1: 4.73, 2: 4.71, 3: 4.69, 4: 4.68, 5: 4.66, 6: 5.64, 7: 5.61, 8: 5.58, 9: 5.56, 10: 5.53, 11: 5.51, 12: 5.48, 13: 5.46, 15: 5.41, 18: 5.34, 24: 5.20, 36: 4.94 }
                 }
             ];
 
+            // 1.3 Lãi suất Định kỳ
             const listingDataPeriodic = {
                 monthly: { 3: 4.73, 4: 4.72, 5: 4.71, 6: 5.73, 7: 5.72, 8: 5.70, 9: 5.69, 10: 5.68, 11: 5.66, 12: 5.65, 13: 5.64, 15: 5.61, 18: 5.57, 24: 5.50, 36: 5.36 },
                 quarterly: { 6: 5.76, 9: 5.72, 12: 5.68, 15: 5.64, 18: 5.60, 24: 5.53, 36: 5.38 },
@@ -111,7 +105,7 @@
             };
 
             // ==========================================
-            // 2. DATA: THẨM QUYỀN
+            // 2. DỮ LIỆU THẨM QUYỀN
             // ==========================================
             const authorityRoles = {
                 'Level1': 'GĐKV/ GĐCN/ GĐCN core/ GĐ TTKD Private',
@@ -262,7 +256,6 @@
                 };
             }, [authAmount, authMonth, depositType, paymentMethod]);
 
-            // Listing Table Component
             const ListingTableRender = ({ data, title, type }) => (
                 <div className="bg-white rounded-xl shadow border border-slate-200 overflow-hidden mb-8">
                     <div className={`p-3 font-bold flex justify-between items-center ${type === 'online' ? 'bg-blue-600 text-white' : 'bg-green-600 text-white'}`}>
@@ -289,7 +282,7 @@
                                         <td className="p-3 text-center border-r">{r.rates.w1_3 ? r.rates.w1_3.toFixed(2) : '-'}</td>
                                         <td className="p-3 text-center border-r">{r.rates.m1 ? r.rates.m1.toFixed(2) : '-'}</td>
                                         <td className="p-3 text-center border-r">{r.rates.m2 ? r.rates.m2.toFixed(2) : '-'}</td>
-                                        <td className="p-3 text-center border-r">{r.rates.m3_5 ? r.rates.m3_5.toFixed(2) : '-'}</td>
+                                        <td className="p-3 text-center border-r">{r.rates.m3 ? r.rates.m3.toFixed(2) : '-'}</td>
                                         <td className="p-3 text-center border-r font-bold">{r.rates.m6 ? r.rates.m6.toFixed(2) : '-'}</td>
                                         <td className="p-3 text-center border-r font-bold">{r.rates.m12 ? r.rates.m12.toFixed(2) : '-'}</td>
                                         <td className="p-3 text-center border-r">{r.rates.m15 ? r.rates.m15.toFixed(2) : '-'}</td>
@@ -303,7 +296,6 @@
                 </div>
             );
 
-            // Authority Table Component
             const RenderTable = ({ data, title, type }) => (
                 <div className="bg-white rounded-xl shadow-lg border border-emerald-200 overflow-hidden mb-8">
                 <div className={`p-4 border-b border-emerald-100 flex justify-between items-center ${type === 'online' ? 'bg-blue-50' : 'bg-green-50'}`}>
@@ -421,6 +413,7 @@
                                     {(Number(authMonth) || 0) >= 12 && <option value="yearly">Hàng năm</option>}
                                     <option value="prepaid">Trả lãi trước</option>
                                 </select>
+                                {paymentMethod !== 'maturity' && <p className="text-[10px] text-indigo-600 mt-1 italic">* Niêm yết tra bảng, Thẩm quyền quy đổi.</p>}
                             </div>
                         </div>
                         </div>
