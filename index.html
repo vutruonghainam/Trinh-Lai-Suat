@@ -5,14 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Công cụ Trình Lãi Suất Tiết Kiệm VPBank</title>
     
-    <!-- 1. Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- 2. React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
-    <!-- 3. Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
     <style>
@@ -23,7 +20,6 @@
         ::-webkit-scrollbar-track { background: #f1f1f1; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-        .emoji-icon { display: inline-block; margin-right: 6px; font-style: normal; }
     </style>
 </head>
 <body>
@@ -56,12 +52,6 @@
             };
 
             const formatCurrency = (value) => new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value);
-
-            const getNimColor = (nimVal) => {
-                if (nimVal >= 1.0) return "text-emerald-600 bg-emerald-50 border-emerald-200";
-                if (nimVal > 0) return "text-yellow-600 bg-yellow-50 border-yellow-200";
-                return "text-red-600 bg-red-50 border-red-200";
-            };
 
             // ==========================================
             // 1. DATA: NIÊM YẾT
@@ -170,7 +160,7 @@
                 switch (method) {
                 case 'maturity': return baseRateEndOfTerm;
                 case 'monthly': R_kq = (Math.pow(1 + (R_ck * n) / 12, 1 / n) - 1) * 12; break;
-                // Sửa công thức quý: mũ là 3/n (1 quý = 3 tháng)
+                // FIX: Quý có 3 tháng nên mũ là 3/n (không phải 4/n)
                 case 'quarterly': R_kq = (Math.pow(1 + (R_ck * n) / 12, 3 / n) - 1) * 4; break;
                 case '6months': R_kq = (Math.pow(1 + (R_ck * n) / 12, 6 / n) - 1) * 2; break;
                 case 'yearly': R_kq = (Math.pow(1 + (R_ck * n) / 12, 12 / n) - 1) * 1; break;
@@ -263,46 +253,11 @@
                 };
             }, [authAmount, authMonth, depositType, paymentMethod]);
 
-            // UI Components
-            const ListingTableRender = ({ data, title, type }) => (
-                <div className="bg-white rounded-xl shadow border border-slate-200 overflow-hidden mb-8">
-                    <div className={`p-3 font-bold flex justify-between items-center ${type === 'online' ? 'bg-blue-600 text-white' : 'bg-green-600 text-white'}`}>
-                        <span className="flex items-center gap-2">
-                            {type === 'online' ? '💻' : '🏪'} {title}
-                        </span>
-                        <span className="text-xs bg-white/20 px-2 py-1 rounded">Hiệu lực từ 09/12/2025</span>
-                    </div>
-                    <div className="overflow-x-auto">
-                        <table className="w-full text-sm text-left">
-                        <thead className={`${type === 'online' ? 'bg-blue-500' : 'bg-green-500'} text-white text-xs uppercase`}>
-                            <tr>
-                                <th className={`p-3 whitespace-nowrap sticky left-0 z-10 ${type === 'online' ? 'bg-blue-500' : 'bg-green-500'}`}>Mức tiền</th>
-                                <th className="p-3 text-center">1-3W</th><th className="p-3 text-center">1T</th><th className="p-3 text-center">2T</th><th className="p-3 text-center">3-5T</th>
-                                <th className="p-3 text-center">6-11T</th><th className="p-3 text-center">12-13T</th><th className="p-3 text-center">15-18T</th><th className="p-3 text-center">24-36T</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-slate-100">
-                            {data.map((r,i) => {
-                                const isSelected = Number(authAmount) >= r.min && Number(authAmount) < r.max;
-                                return (
-                                    <tr key={i} className={`hover:bg-slate-50 ${isSelected ? 'bg-yellow-50' : ''}`}>
-                                        <td className={`p-3 border-r sticky left-0 ${isSelected ? 'bg-yellow-50 font-bold text-green-800' : 'bg-white'}`}>{r.range}</td>
-                                        <td className="p-3 text-center border-r">{r.rates.w1_3.toFixed(2)}</td>
-                                        <td className="p-3 text-center border-r">{r.rates.m1.toFixed(2)}</td>
-                                        <td className="p-3 text-center border-r">{r.rates.m2.toFixed(2)}</td>
-                                        <td className="p-3 text-center border-r">{r.rates.m3.toFixed(2)}</td>
-                                        <td className="p-3 text-center border-r font-bold">{r.rates.m6.toFixed(2)}</td>
-                                        <td className="p-3 text-center border-r font-bold">{r.rates.m12.toFixed(2)}</td>
-                                        <td className="p-3 text-center border-r">{r.rates.m15.toFixed(2)}</td>
-                                        <td className="p-3 text-center">{r.rates.m36.toFixed(2)}</td>
-                                    </tr>
-                                )
-                            })}
-                        </tbody>
-                        </table>
-                    </div>
-                </div>
-            );
+            const getNimColor = (nimVal) => {
+                if (nimVal >= 1.0) return "text-emerald-600 bg-emerald-50 border-emerald-200";
+                if (nimVal > 0) return "text-yellow-600 bg-yellow-50 border-yellow-200";
+                return "text-red-600 bg-red-50 border-red-200";
+            };
 
             const RenderTable = ({ data, title, type }) => (
                 <div className="bg-white rounded-xl shadow-lg border border-emerald-200 overflow-hidden mb-8">
@@ -348,16 +303,64 @@
                 </div>
             );
 
+            const ListingTableRender = ({ data, title, type }) => (
+                <div className="bg-white rounded-xl shadow border border-slate-200 overflow-hidden mb-8">
+                    <div className={`p-3 font-bold flex justify-between items-center ${type === 'online' ? 'bg-blue-600 text-white' : 'bg-green-600 text-white'}`}>
+                        <span className="flex items-center gap-2">
+                            {type === 'online' ? '💻' : '🏪'} {title}
+                        </span>
+                        <span className="text-xs bg-white/20 px-2 py-1 rounded">Hiệu lực từ 09/12/2025</span>
+                    </div>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-sm text-left">
+                        <thead className={`${type === 'online' ? 'bg-blue-500' : 'bg-green-500'} text-white text-xs uppercase`}>
+                            <tr>
+                                <th className={`p-3 whitespace-nowrap sticky left-0 z-10 ${type === 'online' ? 'bg-blue-500' : 'bg-green-500'}`}>Mức tiền</th>
+                                <th className="p-3 text-center">1-3W</th><th className="p-3 text-center">1T</th><th className="p-3 text-center">2T</th><th className="p-3 text-center">3-5T</th>
+                                <th className="p-3 text-center">6-11T</th><th className="p-3 text-center">12-13T</th><th className="p-3 text-center">15-18T</th><th className="p-3 text-center">24-36T</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-100">
+                            {data.map((r,i) => {
+                                const isSelected = Number(authAmount) >= r.min && Number(authAmount) < r.max;
+                                return (
+                                    <tr key={i} className={`hover:bg-slate-50 ${isSelected ? 'bg-yellow-50' : ''}`}>
+                                        <td className={`p-3 border-r sticky left-0 ${isSelected ? 'bg-yellow-50 font-bold text-green-800' : 'bg-white'}`}>{r.range}</td>
+                                        <td className="p-3 text-center border-r">{r.rates.w1_3.toFixed(2)}</td>
+                                        <td className="p-3 text-center border-r">{r.rates.m1.toFixed(2)}</td>
+                                        <td className="p-3 text-center border-r">{r.rates.m2.toFixed(2)}</td>
+                                        <td className="p-3 text-center border-r">{r.rates.m3_5.toFixed(2)}</td>
+                                        <td className="p-3 text-center border-r font-bold">{r.rates.m6.toFixed(2)}</td>
+                                        <td className="p-3 text-center border-r font-bold">{r.rates.m12.toFixed(2)}</td>
+                                        <td className="p-3 text-center border-r">{r.rates.m15.toFixed(2)}</td>
+                                        <td className="p-3 text-center">{r.rates.m36.toFixed(2)}</td>
+                                    </tr>
+                                )
+                            })}
+                        </tbody>
+                        </table>
+                    </div>
+                </div>
+            );
+
             return (
                 <div className="flex flex-col h-full bg-slate-50 text-slate-900 font-sans min-h-screen">
+                
+                {/* HEADER */}
                 <header className="bg-gradient-to-r from-blue-900 to-indigo-800 text-white p-6 shadow-md">
                     <div className="max-w-6xl mx-auto">
-                    <h1 className="text-2xl font-bold flex items-center gap-2">💼 Công cụ Trình Lãi Suất Tiết Kiệm</h1>
-                    <p className="text-blue-100 mt-2 text-sm opacity-90">Tool được viết bởi nhóm RMD VPBank Nha Trang</p>
+                    <h1 className="text-2xl font-bold flex items-center gap-2">
+                        💼 Công cụ Trình Lãi Suất Tiết Kiệm
+                    </h1>
+                    <p className="text-blue-100 mt-2 text-sm opacity-90">
+                        Công cụ trình lãi suất tiết kiệm của VPBank Nha Trang
+                    </p>
                     </div>
                 </header>
 
                 <main className="flex-1 max-w-6xl w-full mx-auto p-4 md:p-6 space-y-6">
+                    
+                    {/* TAB NAVIGATION */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 bg-white p-1.5 rounded-xl shadow-sm border border-slate-200">
                     <button onClick={() => setActiveTab('proposal')} className={`py-3 px-2 rounded-lg text-sm font-bold flex justify-center gap-2 ${activeTab === 'proposal' ? 'bg-indigo-100 text-indigo-800 shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}>📝 Trình Thẩm Quyền</button>
                     <button onClick={() => setActiveTab('authority')} className={`py-3 px-2 rounded-lg text-sm font-bold flex justify-center gap-2 ${activeTab === 'authority' ? 'bg-emerald-100 text-emerald-800 shadow-sm' : 'text-slate-500 hover:bg-slate-50'}`}>🛡️ Bảng LS Thẩm Quyền</button>
@@ -421,7 +424,6 @@
                                     {(Number(authMonth) || 0) >= 12 && <option value="yearly">Hàng năm</option>}
                                     <option value="prepaid">Trả lãi trước</option>
                                 </select>
-                                {paymentMethod !== 'maturity' && <p className="text-[10px] text-indigo-600 mt-1 italic">* Niêm yết tra bảng, Thẩm quyền quy đổi.</p>}
                             </div>
                         </div>
                         </div>
@@ -458,16 +460,19 @@
                                     <div>
                                         <div className="flex justify-between items-end mb-1"><span className="text-sm font-bold text-slate-700">↗️ Ưu đãi lãi suất</span></div>
                                         <div className="p-4 bg-orange-50 rounded-lg border border-orange-200 text-center"><span className="text-4xl font-extrabold text-orange-600">+{proposalData.spread}%</span></div>
+                                        <div className="mt-2 pt-2 border-t border-orange-200 text-xs text-orange-800">Tương ứng với lãi suất in trên sổ: <span className="font-bold">{proposalData.authorityRate ? proposalData.authorityRate.toFixed(2) : '-'}%</span></div>
                                     </div>
                                     <div className="w-full h-px bg-slate-100"></div>
                                     <div>
                                         <div className="flex justify-between items-end mb-1"><span className="text-sm font-bold text-slate-700">📊 NIM Huy động</span></div>
                                         <div className={`p-4 rounded-lg border text-center ${getNimColor(Number(proposalData.nim))}`}><span className="text-4xl font-extrabold">{Number(proposalData.nim) < 0 ? '⚠️' : '✅'} {proposalData.nim}%</span></div>
+                                        <div className="mt-2 pt-2 border-t border-black/10 text-xs opacity-90">Mức LSMV áp dụng: <span className="font-bold">{proposalData.lsmvRate.toFixed(2)}%</span></div>
                                     </div>
                                     <div className="w-full h-px bg-slate-100"></div>
                                     <div>
                                         <div className="flex justify-between items-end mb-1"><span className="text-sm font-bold text-indigo-800">👛 Cam kết Casa</span></div>
                                         <div className="p-4 rounded-lg border border-indigo-200 bg-indigo-50 text-center"><div className="text-xl font-bold text-indigo-700">{formatNumberWithDots(proposalData.casaCommitment)} ₫</div></div>
+                                        <div className="mt-2 pt-2 border-t border-indigo-200 text-xs text-indigo-600 italic">(0.5% trên tổng tiền gửi)</div>
                                     </div>
                                     <div className="mt-4 pt-4 border-t border-slate-100 space-y-3 text-sm">
                                         <div className="flex justify-between"><span>Lãi Niêm yết:</span><span className="font-medium">{formatNumberWithDots(proposalData.interestListed)} ₫</span></div>
