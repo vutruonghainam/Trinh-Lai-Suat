@@ -5,38 +5,32 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Công cụ Trình Lãi Suất Tiết Kiệm VPBank</title>
     
+    <!-- 1. Thư viện Tailwind CSS (Giao diện) -->
     <script src="https://cdn.tailwindcss.com"></script>
     
+    <!-- 2. Thư viện React & ReactDOM (Core) -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     
+    <!-- 3. Thư viện Babel (Biên dịch JSX ngay trên trình duyệt) -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <script src="https://unpkg.com/lucide-react@0.263.1/dist/lucide-react.min.js"></script>
 
     <style>
-        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f8fafc; }
-        /* Tùy chỉnh thanh cuộn cho đẹp hơn */
+        body { font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; background-color: #f0f9ff; }
+        .icon { font-style: normal; margin-right: 6px; }
+        /* Tùy chỉnh thanh cuộn */
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        ::-webkit-scrollbar-thumb { background: #94a3b8; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
     </style>
 </head>
 <body>
+    <!-- Nơi ứng dụng React sẽ hiển thị -->
     <div id="root"></div>
 
     <script type="text/babel">
-        // Lấy các hooks từ React
         const { useState, useMemo, useEffect } = React;
-
-        // Lấy các Icons từ thư viện Lucide đã nhúng
-        const { 
-            Calculator, Table, TrendingUp, Info, DollarSign, Calendar, 
-            UserCheck, ShieldCheck, List, BarChart3, FileText, ArrowRight,
-            CheckCircle2, AlertTriangle, Briefcase, Search, Wallet, Percent, ArrowUpRight,
-            Monitor, Store, Coins, Clock, CreditCard, BookOpen
-        } = lucideReact;
 
         const InterestApprovalTool = () => {
             const [activeTab, setActiveTab] = useState('proposal'); 
@@ -47,7 +41,7 @@
             const [depositType, setDepositType] = useState('online'); // Mặc định Online
             const [paymentMethod, setPaymentMethod] = useState('maturity'); 
 
-            // Reset payment method if invalid for the selected term
+            // Reset phương thức trả lãi nếu không hợp lệ với kỳ hạn
             useEffect(() => {
                 const m = Number(authMonth) || 0;
                 if (m < 3 && (paymentMethod === 'monthly' || paymentMethod === 'quarterly')) setPaymentMethod('maturity');
@@ -55,7 +49,7 @@
                 if (m < 12 && paymentMethod === 'yearly') setPaymentMethod('maturity');
             }, [authMonth, paymentMethod]);
 
-            // Helper format số có dấu chấm
+            // Helper format số tiền hiển thị
             const formatNumberWithDots = (value) => {
                 if (value === '' || value === undefined || value === null) return '';
                 return new Intl.NumberFormat('vi-VN').format(value);
@@ -180,6 +174,7 @@
                 switch (method) {
                 case 'maturity': return baseRateEndOfTerm;
                 case 'monthly': R_kq = (Math.pow(1 + (R_ck * n) / 12, 1 / n) - 1) * 12; break;
+                // FIX: Quý có 3 tháng nên mũ là 3/n (không phải 4/n)
                 case 'quarterly': R_kq = (Math.pow(1 + (R_ck * n) / 12, 3 / n) - 1) * 4; break;
                 case '6months': R_kq = (Math.pow(1 + (R_ck * n) / 12, 6 / n) - 1) * 2; break;
                 case 'yearly': R_kq = (Math.pow(1 + (R_ck * n) / 12, 12 / n) - 1) * 1; break;
@@ -284,7 +279,7 @@
                 <div className="bg-white rounded-xl shadow-lg border border-emerald-200 overflow-hidden mb-8">
                 <div className={`p-4 border-b border-emerald-100 flex justify-between items-center ${type === 'online' ? 'bg-blue-50' : 'bg-green-50'}`}>
                     <h3 className={`font-bold flex items-center gap-2 ${type === 'online' ? 'text-blue-800' : 'text-green-800'}`}>
-                    {type === 'online' ? <Monitor className="w-5 h-5"/> : <Store className="w-5 h-5"/>} 
+                    {type === 'online' ? '💻' : '🏪'} 
                     {title}
                     </h3>
                     <span className="text-xs font-medium px-2 py-1 rounded border bg-white/50">Hiệu lực 09/12/2025</span>
@@ -329,7 +324,7 @@
                 <div className="bg-white rounded-xl shadow border border-slate-200 overflow-hidden mb-8">
                     <div className={`p-3 font-bold flex justify-between items-center ${type === 'online' ? 'bg-blue-600 text-white' : 'bg-green-600 text-white'}`}>
                         <span className="flex items-center gap-2">
-                            {type === 'online' ? <Monitor className="w-5 h-5"/> : <Store className="w-5 h-5"/>} 
+                            {type === 'online' ? '💻' : '🏪'} 
                             {title}
                         </span>
                         <span className="text-xs bg-white/20 px-2 py-1 rounded">Hiệu lực từ 09/12/2025</span>
@@ -373,8 +368,7 @@
                 <header className="bg-gradient-to-r from-blue-900 to-indigo-800 text-white p-6 shadow-md">
                     <div className="max-w-6xl mx-auto">
                     <h1 className="text-2xl font-bold flex items-center gap-2">
-                        <Briefcase className="w-8 h-8 text-yellow-400" />
-                        Công cụ Trình Lãi Suất Tiết Kiệm
+                        💼 Công cụ Trình Lãi Suất Tiết Kiệm
                     </h1>
                     <p className="text-blue-100 mt-2 text-sm opacity-90">
                         Công cụ trình lãi suất tiết kiệm của VPBank Nha Trang
@@ -386,10 +380,10 @@
                     
                     {/* TAB NAVIGATION */}
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2 bg-white p-1.5 rounded-xl shadow-sm border border-slate-200">
-                    <button onClick={() => setActiveTab('proposal')} className={`py-3 px-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'proposal' ? 'bg-indigo-100 text-indigo-800 shadow-sm ring-1 ring-indigo-200' : 'text-slate-500 hover:bg-slate-50'}`}><FileText className="w-4 h-4" /> Trình Thẩm Quyền</button>
-                    <button onClick={() => setActiveTab('authority')} className={`py-3 px-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'authority' ? 'bg-emerald-100 text-emerald-800 shadow-sm ring-1 ring-emerald-200' : 'text-slate-500 hover:bg-slate-50'}`}><ShieldCheck className="w-4 h-4" /> Bảng LS Thẩm Quyền</button>
-                    <button onClick={() => setActiveTab('listing')} className={`py-3 px-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'listing' ? 'bg-green-100 text-green-800 shadow-sm ring-1 ring-green-200' : 'text-slate-500 hover:bg-slate-50'}`}><List className="w-4 h-4" /> Bảng LS Niêm Yết</button>
-                    <button onClick={() => setActiveTab('lsmv_table')} className={`py-3 px-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'lsmv_table' ? 'bg-blue-100 text-blue-800 shadow-sm ring-1 ring-blue-200' : 'text-slate-500 hover:bg-slate-50'}`}><Table className="w-4 h-4" /> Bảng LSMV</button>
+                    <button onClick={() => setActiveTab('proposal')} className={`py-3 px-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'proposal' ? 'bg-indigo-100 text-indigo-800 shadow-sm ring-1 ring-indigo-200' : 'text-slate-500 hover:bg-slate-50'}`}>📝 Trình Thẩm Quyền</button>
+                    <button onClick={() => setActiveTab('authority')} className={`py-3 px-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'authority' ? 'bg-emerald-100 text-emerald-800 shadow-sm ring-1 ring-emerald-200' : 'text-slate-500 hover:bg-slate-50'}`}>🛡️ Bảng LS Thẩm Quyền</button>
+                    <button onClick={() => setActiveTab('listing')} className={`py-3 px-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'listing' ? 'bg-green-100 text-green-800 shadow-sm ring-1 ring-green-200' : 'text-slate-500 hover:bg-slate-50'}`}>📜 Bảng LS Niêm Yết</button>
+                    <button onClick={() => setActiveTab('lsmv_table')} className={`py-3 px-2 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'lsmv_table' ? 'bg-blue-100 text-blue-800 shadow-sm ring-1 ring-blue-200' : 'text-slate-500 hover:bg-slate-50'}`}>📊 Bảng LSMV</button>
                     </div>
 
                     {/* ==================== TAB 1: TRÌNH THẨM QUYỀN ==================== */}
@@ -397,14 +391,14 @@
                     <div className="space-y-6 animate-in fade-in duration-300">
                         {/* Input */}
                         <div className="bg-white p-6 rounded-xl shadow-lg border border-indigo-100 grid grid-cols-1 md:grid-cols-2 gap-6 relative overflow-hidden">
-                        <div className="absolute top-0 right-0 p-4 opacity-5"><FileText className="w-40 h-40 text-indigo-900" /></div>
+                        <div className="absolute top-0 right-0 p-4 opacity-5 text-9xl">📝</div>
                         
                         <div className="relative z-10 space-y-4">
                             {/* Amount */}
                             <div>
                                 <label className="block text-sm font-bold text-slate-700 mb-2">Số tiền huy động (VND)</label>
                                 <div className="relative">
-                                <DollarSign className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                                <span className="absolute left-3 top-3 w-5 h-5 text-slate-400">💵</span>
                                 <input 
                                     type="text" 
                                     value={formatNumberWithDots(authAmount)} 
@@ -429,8 +423,8 @@
                             <div>
                                 <label className="block text-sm font-bold text-slate-700 mb-2">Hình thức gửi</label>
                                 <div className="flex bg-slate-100 p-1 rounded-lg border border-slate-200">
-                                    <button onClick={() => setDepositType('online')} className={`flex-1 py-2 px-4 rounded-md text-sm font-bold flex items-center justify-center gap-2 transition-all ${depositType === 'online' ? 'bg-white text-blue-600 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}><Monitor className="w-4 h-4"/> Online</button>
-                                    <button onClick={() => setDepositType('counter')} className={`flex-1 py-2 px-4 rounded-md text-sm font-bold flex items-center justify-center gap-2 transition-all ${depositType === 'counter' ? 'bg-white text-indigo-700 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}><Store className="w-4 h-4"/> Tại Quầy</button>
+                                    <button onClick={() => setDepositType('online')} className={`flex-1 py-2 px-4 rounded-md text-sm font-bold flex items-center justify-center gap-2 transition-all ${depositType === 'online' ? 'bg-white text-blue-600 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}>💻 Online</button>
+                                    <button onClick={() => setDepositType('counter')} className={`flex-1 py-2 px-4 rounded-md text-sm font-bold flex items-center justify-center gap-2 transition-all ${depositType === 'counter' ? 'bg-white text-indigo-700 shadow-sm border border-slate-200' : 'text-slate-500 hover:text-slate-700'}`}>🏪 Tại Quầy</button>
                                 </div>
                             </div>
                         </div>
@@ -441,7 +435,7 @@
                                 <div>
                                     <label className="block text-sm font-bold text-slate-700 mb-2">Kỳ hạn gửi (Tháng)</label>
                                     <div className="relative">
-                                    <Calendar className="absolute left-3 top-3 w-5 h-5 text-slate-400" />
+                                    <span className="absolute left-3 top-3 w-5 h-5 text-slate-400">📅</span>
                                     <input 
                                         type="number" 
                                         value={authMonth} 
@@ -458,7 +452,7 @@
 
                                 {/* Phương thức trả lãi */}
                                 <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-1"><Clock className="w-4 h-4"/> Phương thức trả lãi</label>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2 flex items-center gap-1">🕒 Phương thức trả lãi</label>
                                     <select value={paymentMethod} onChange={(e) => setPaymentMethod(e.target.value)} className="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-sm font-medium focus:ring-2 focus:ring-indigo-500">
                                         <option value="maturity">Cuối kỳ (Mặc định)</option>
                                         {(Number(authMonth) || 0) >= 3 && <option value="monthly">Hàng tháng</option>}
@@ -477,7 +471,7 @@
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                             <div className="lg:col-span-2 bg-white rounded-xl shadow-md border border-slate-200 overflow-hidden">
                                 <div className="p-4 bg-slate-50 border-b border-slate-100 font-bold text-slate-700 flex items-center gap-2">
-                                    <Table className="w-5 h-5 text-indigo-600"/> Chi Tiết Lãi Suất ({depositType === 'online' ? 'Online' : 'Tại Quầy'})
+                                    📋 Chi Tiết Lãi Suất ({depositType === 'online' ? 'Online' : 'Tại Quầy'})
                                 </div>
                                 <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-4 text-center">
                                     <div className="p-4 rounded-lg bg-green-50 border border-green-100 flex flex-col items-center justify-center">
@@ -485,7 +479,7 @@
                                         <span className="text-2xl font-bold text-slate-800">{proposalData.listedRate ? proposalData.listedRate.toFixed(2) : '-'}%</span>
                                         {paymentMethod !== 'maturity' && <span className="text-[10px] text-slate-500">(Theo bảng)</span>}
                                     </div>
-                                    <div className="hidden md:flex flex-col items-center justify-center"><ArrowRight className="w-6 h-6 text-slate-300"/></div>
+                                    <div className="hidden md:flex flex-col items-center justify-center">➡️</div>
                                     <div className="p-4 rounded-lg bg-indigo-50 border border-indigo-100 flex flex-col items-center justify-center ring-2 ring-indigo-200 shadow-sm relative">
                                         <span className="absolute -top-3 bg-indigo-600 text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded-full">Trần Phê Duyệt</span>
                                         <span className="text-xs uppercase font-bold text-indigo-700 mb-1">Thẩm Quyền</span>
@@ -495,7 +489,7 @@
                                     </div>
                                 </div>
                                 <div className="mx-6 mb-6 mt-2 p-3 bg-blue-50 rounded-lg border border-blue-100 flex justify-between items-center">
-                                    <div className="flex items-center gap-2"><ShieldCheck className="w-5 h-5 text-blue-600"/><span className="text-sm font-medium text-blue-800">Lãi suất Mua bán vốn (LSMV/FTP)</span></div>
+                                    <div className="flex items-center gap-2">🛡️ <span className="text-sm font-medium text-blue-800">Lãi suất Mua bán vốn (LSMV/FTP)</span></div>
                                     <span className="text-xl font-bold text-blue-700">{proposalData.lsmvRate.toFixed(2)}%</span>
                                     <span className="text-[10px] text-blue-500 bg-blue-50 px-2 py-0.5 rounded border border-blue-100">
                                         {paymentMethod === 'maturity' ? 'Cuối kỳ' : paymentMethod === 'prepaid' ? 'Đầu kỳ' : 'Định kỳ'}
@@ -505,13 +499,13 @@
 
                             <div className="bg-white rounded-xl shadow-md border border-slate-200 flex flex-col">
                                 <div className="p-4 bg-slate-50 border-b border-slate-100 font-bold text-slate-700 flex items-center gap-2">
-                                    <TrendingUp className="w-5 h-5 text-orange-600"/> Hiệu Quả Deal
+                                    📈 Hiệu Quả Deal
                                 </div>
                                 <div className="flex-1 p-6 flex flex-col justify-center space-y-6">
                                     {/* 1. Mức Ưu Đãi */}
                                     <div>
                                         <div className="flex justify-between items-end mb-1">
-                                            <span className="text-sm font-bold text-slate-700 flex items-center gap-1"><ArrowUpRight className="w-4 h-4"/> Mức ưu đãi lãi suất</span>
+                                            <span className="text-sm font-bold text-slate-700 flex items-center gap-1">↗️ Mức ưu đãi lãi suất</span>
                                             <span className="text-xs text-slate-400">(Thẩm quyền - Niêm yết)</span>
                                         </div>
                                         <div className="p-4 bg-orange-50 rounded-lg border border-orange-200 text-center">
@@ -527,11 +521,11 @@
                                     {/* 2. NIM Huy Động */}
                                     <div>
                                         <div className="flex justify-between items-end mb-1">
-                                            <span className="text-sm font-bold text-slate-700 flex items-center gap-1"><BarChart3 className="w-4 h-4"/> NIM Huy động</span>
+                                            <span className="text-sm font-bold text-slate-700 flex items-center gap-1">📊 NIM Huy động</span>
                                         </div>
                                         <div className={`p-4 rounded-lg border text-center transition-colors ${getNimColor(Number(proposalData.nim))}`}>
                                             <span className="text-4xl font-extrabold flex items-center justify-center gap-2">
-                                                {Number(proposalData.nim) < 0 ? <AlertTriangle className="w-8 h-8"/> : <CheckCircle2 className="w-8 h-8"/>}
+                                                {Number(proposalData.nim) < 0 ? '⚠️' : '✅'}
                                                 {proposalData.nim}%
                                             </span>
                                             <div className="mt-2 pt-2 border-t border-black/10 text-xs opacity-90">
@@ -545,7 +539,7 @@
                                     {/* 3. Casa Commitment */}
                                     <div>
                                         <div className="flex justify-between items-end mb-1">
-                                            <span className="text-sm font-bold text-indigo-800 flex items-center gap-1"><Wallet className="w-4 h-4"/> Số tiền cam kết Casa</span>
+                                            <span className="text-sm font-bold text-indigo-800 flex items-center gap-1">👛 Số tiền cam kết Casa</span>
                                         </div>
                                         <div className="p-4 rounded-lg border border-indigo-200 bg-indigo-50 text-center">
                                             <div className="text-xl font-bold text-indigo-700 text-center">{formatCurrency(proposalData.casaCommitment)}</div>
@@ -566,7 +560,7 @@
                                             <span className="font-bold text-indigo-700">{formatCurrency(proposalData.interestAuthority)}</span>
                                         </div>
                                         <div className="p-3 bg-green-50 rounded-lg border border-green-200 flex justify-between items-center">
-                                            <span className="text-xs font-bold text-green-800 uppercase flex items-center gap-1"><Coins className="w-3 h-3"/> Khách hàng lợi thêm:</span>
+                                            <span className="text-xs font-bold text-green-800 uppercase flex items-center gap-1">🪙 Khách hàng lợi thêm:</span>
                                             <span className="text-lg font-extrabold text-green-700">+{formatCurrency(proposalData.interestDiff)}</span>
                                         </div>
                                     </div>
@@ -581,7 +575,7 @@
                     {activeTab === 'authority' && (
                     <div className="space-y-6 animate-in fade-in">
                         <div className="p-4 bg-blue-50 rounded-lg border border-blue-200 text-blue-800 text-sm mb-4 flex items-center gap-2">
-                            <Info className="w-5 h-5"/> Bảng thẩm quyền hiện tại chỉ áp dụng cho lãi suất <strong>Cuối Kỳ</strong>. Các phương thức trả lãi khác được quy đổi tương đương.
+                            ℹ️ Bảng thẩm quyền hiện tại chỉ áp dụng cho lãi suất <strong>Cuối Kỳ</strong>. Các phương thức trả lãi khác được quy đổi tương đương.
                         </div>
                         {/* Counter Table */}
                         <RenderTable data={authorityData.counter} title="Bảng Lãi Suất Tại Quầy" type="counter" />
@@ -602,7 +596,7 @@
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             {/* Trả trước */}
                             <div className="bg-white rounded-xl shadow border border-slate-200 overflow-hidden">
-                                <div className="p-3 bg-green-600 text-white font-bold flex items-center gap-2"><ArrowUpRight className="w-5 h-5"/> Lãi Suất Trả Trước (Phân Tầng)</div>
+                                <div className="p-3 bg-green-600 text-white font-bold flex items-center gap-2">↗️ Lãi Suất Trả Trước (Phân Tầng)</div>
                                 <div className="overflow-x-auto h-[300px]">
                                     <table className="w-full text-sm">
                                         <thead className="bg-green-500 text-white text-xs sticky top-0">
@@ -626,7 +620,7 @@
                             </div>
                             {/* Định kỳ Hàng tháng */}
                             <div className="bg-white rounded-xl shadow border border-slate-200 overflow-hidden">
-                                <div className="p-3 bg-orange-500 text-white font-bold flex items-center gap-2"><Clock className="w-5 h-5"/> Lãi Suất Hàng Tháng</div>
+                                <div className="p-3 bg-orange-500 text-white font-bold flex items-center gap-2">🕒 Lãi Suất Hàng Tháng</div>
                                 <div className="overflow-x-auto h-[300px]">
                                     <table className="w-full text-sm">
                                         <thead className="bg-orange-400 text-white text-xs sticky top-0"><tr><th className="p-3">Kỳ hạn</th><th className="p-3 text-right">Lãi suất (%)</th></tr></thead>
@@ -683,7 +677,7 @@
                             {/* Explanation Block */}
                             <div className="bg-blue-50 p-5 rounded-xl border border-blue-200">
                                 <h4 className="font-bold text-blue-900 flex items-center gap-2 mb-3">
-                                    <BookOpen className="w-5 h-5"/> Giải thích các loại Lãi suất Mua bán vốn (FTP)
+                                    📖 Giải thích các loại Lãi suất Mua bán vốn (FTP)
                                 </h4>
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-blue-800">
                                     <div className="bg-white p-3 rounded-lg shadow-sm">
@@ -708,9 +702,10 @@
             );
         };
 
-        // Render ứng dụng vào thẻ div#root
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<InterestApprovalTool />);
     </script>
 </body>
 </html>
+
+
